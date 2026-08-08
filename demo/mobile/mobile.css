@@ -1,0 +1,135 @@
+/* Readyset — phone view. Loads on top of readyset.css: same tokens, same stage,
+   one console panel at a time with a thumb-reachable action bar. */
+
+.m-body { font-size: 14px; }
+
+.m-page {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 16px 16px 0;
+}
+
+/* ---------- header ---------- */
+
+.m-head { display: flex; flex-direction: column; gap: 12px; }
+
+.m-brandrow { display: flex; align-items: center; gap: 12px; }
+.m-brandrow .m-meta { flex: 1; font-size: 11px; letter-spacing: 0.12em; }
+.m-brandrow .theme-toggle { width: 38px; height: 38px; }
+
+.m-headline {
+  font-family: var(--sg);
+  font-size: 17px;
+  font-weight: 500;
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  text-wrap: pretty;
+}
+
+.m-metric {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  border: 1px solid var(--frame-line);
+  border-radius: 11px;
+  padding: 12px 14px;
+}
+.m-metric-labels { display: flex; flex-direction: column; gap: 3px; }
+.m-metric .clock { font-size: 34px; }
+
+/* ---------- crumbs + tabs ---------- */
+
+.m-crumbs {
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  scrollbar-width: none;
+  margin: 0 -16px;
+  padding: 0 16px;
+}
+.m-crumbs::-webkit-scrollbar { display: none; }
+.m-crumbs li { padding: 6px 10px; white-space: nowrap; flex: none; }
+
+.m-tabs { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; }
+
+.m-tab {
+  font-family: var(--mono-f);
+  font-size: 12px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  padding: 11px 0;
+  border-radius: 9px;
+  border: 1px solid var(--frame-line);
+  background: transparent;
+  color: var(--frame-muted);
+  cursor: pointer;
+}
+.m-tab.active {
+  background: var(--frame-ink);
+  border-color: var(--frame-ink);
+  color: var(--frame-bg);
+}
+.m-tab:focus-visible { outline: 3px solid var(--ready); outline-offset: 2px; }
+
+/* ---------- console: one panel at a time ---------- */
+
+.m-console { display: block; min-height: 0; }
+.m-console .col { display: none; }
+.m-console .col.active { display: flex; }
+.m-console .col-intake,
+.m-console .col-work,
+.m-console .col-agent { border-right: none; padding: 18px 16px 20px; }
+
+.m-console .intake-foot { margin-top: 4px; }
+.m-console .gates { margin-top: 4px; }
+
+/* denser rows on a narrow screen */
+
+.m-console .frow { grid-template-columns: 84px minmax(0, 1fr); gap: 4px 14px; padding: 12px 2px; }
+.m-console .frow .fsrc { grid-column: 2; text-align: left; }
+
+.m-console .orow { grid-template-columns: 1fr; gap: 3px; }
+.m-console .dup-reasons { grid-template-columns: 1fr; gap: 6px; }
+.m-console .dup-actions { flex-direction: column; }
+.m-console .work-head { flex-wrap: wrap; }
+.m-console .work-head .idgroup { flex-wrap: wrap; }
+.m-console .work-head .rid { white-space: nowrap; }
+.m-console .msg-head { flex-wrap: wrap; }
+
+/* ---------- footer + fixed action bar ---------- */
+
+.m-foot {
+  line-height: 1.7;
+  color: var(--frame-muted);
+  text-wrap: pretty;
+  padding-bottom: calc(118px + env(safe-area-inset-bottom));
+}
+.m-foot .viewlink { display: inline-block; margin-top: 4px; }
+
+.m-actionbar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  z-index: 10;
+  background: var(--frame-bg);
+  border-top: 1px solid var(--frame-line);
+  padding: 9px 16px calc(12px + env(safe-area-inset-bottom));
+}
+.m-actionbar-inner {
+  max-width: 560px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+.m-caption { margin-left: 0; min-height: 16px; display: block; }
+
+.m-actions { display: flex; gap: 8px; }
+.m-actions .btn-step { flex: 1; padding: 13px 10px; order: 2; }
+.m-actions .btn-outline { padding: 13px 14px; }
+.m-actions #btn-back { order: 1; }
+.m-actions #btn-restart { order: 3; }

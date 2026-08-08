@@ -130,6 +130,7 @@
     renderGates(d);
 
     prev = d;
+    document.dispatchEvent(new CustomEvent("readyset:render", { detail: { step: d.step } }));
   }
 
   function fmtClock(secs) {

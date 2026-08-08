@@ -1,0 +1,98 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Readyset — coordinator console · phone</title>
+<meta name="description" content="Watch Readyset turn a vague maintenance report into a dispatch-ready, deduplicated work order in four minutes. Phone view.">
+<script>(function(){try{var t=localStorage.getItem("rs-theme");if(t)document.documentElement.dataset.theme=t;}catch(e){}})()</script>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;700&family=Inter:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="../readyset.css">
+<link rel="stylesheet" href="mobile.css">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%230B211B'/%3E%3Cpath d='M10 24V13.5c0-3 2.4-5.5 5.4-5.5 2.2 0 4.1 1.3 5 3.1M14 18.5h8.5m0 0-3-3m3 3-3 3' stroke='%232FD284' stroke-width='2.4' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E">
+</head>
+<body class="m-body">
+<div class="m-page">
+
+  <header class="m-head">
+    <div class="m-brandrow">
+      <a class="wordmark" href="../../">readyset</a>
+      <span class="mono meta-wide m-meta">COORDINATOR CONSOLE</span>
+      <button id="theme-toggle" class="theme-toggle" type="button" aria-label="Switch theme">
+        <svg width="16" height="16" viewBox="0 0 16 16" aria-hidden="true"><circle cx="8" cy="8" r="6.25" fill="none" stroke="currentColor" stroke-width="1.5"/><path d="M8 1.75 A6.25 6.25 0 0 1 8 14.25 Z" fill="currentColor"/></svg>
+      </button>
+    </div>
+    <p class="m-headline">A vague message becomes a dispatch-ready work order.</p>
+    <div class="m-metric">
+      <div class="m-metric-labels">
+        <span class="mono meta-wide">TIME-TO-READY</span>
+        <span class="mono mono-12" id="clock-state">counting since 12:18</span>
+        <span class="mono mono-12">team baseline: 2.4 days</span>
+      </div>
+      <span class="clock" id="clock">0:00</span>
+    </div>
+  </header>
+
+  <ol class="crumbs m-crumbs" id="crumbs" aria-label="Demo progress"></ol>
+
+  <nav class="m-tabs" role="tablist" aria-label="Console panels">
+    <button class="m-tab" id="tab-intake" data-tab="intake" role="tab" aria-selected="true" aria-controls="panel-intake" type="button">intake</button>
+    <button class="m-tab" id="tab-work" data-tab="work" role="tab" aria-selected="false" aria-controls="work" type="button">work</button>
+    <button class="m-tab" id="tab-agent" data-tab="agent" role="tab" aria-selected="false" aria-controls="panel-agent" type="button">agent</button>
+  </nav>
+
+  <div class="console m-console">
+    <section class="col col-intake" id="panel-intake" role="tabpanel" aria-labelledby="tab-intake">
+      <div class="col-head">
+        <h2>intake</h2>
+        <div class="intake-meta mono">
+          <span id="stream-count" class="c-note">4 open</span>
+          <span class="c-sep">·</span>
+          <button id="btn-sort" class="sort-toggle" type="button">by priority</button>
+        </div>
+      </div>
+      <ol class="cards" id="cards"></ol>
+      <div class="intake-foot mono">4 CHANNELS · LIVE<br>EMAIL · SMS · PHONE · PORTAL</div>
+    </section>
+
+    <section class="col col-work" id="work" role="tabpanel" aria-labelledby="tab-work"></section>
+
+    <section class="col col-agent" id="panel-agent" role="tabpanel" aria-labelledby="tab-agent">
+      <div class="col-head">
+        <h2>agent</h2>
+        <span class="mono mono-12">every action logged with its source</span>
+      </div>
+      <div id="hazard-slot"></div>
+      <div class="agent-feed" id="agent-feed" aria-live="polite"></div>
+      <div class="gates">
+        <div class="mono gate-head">HUMAN GATES</div>
+        <div id="gate-rows"></div>
+      </div>
+    </section>
+  </div>
+
+  <footer class="mono mono-12 m-foot">
+    READYSET SUGGESTS · THE COORDINATOR DECIDES · MAXIMO STAYS THE SOURCE OF RECORD
+    <a class="viewlink" href="../">DESKTOP VIEW</a>
+  </footer>
+
+</div>
+
+<div class="m-actionbar">
+  <div class="m-actionbar-inner">
+    <span class="mono mono-12 caption m-caption" id="caption" aria-live="polite"></span>
+    <div class="m-actions">
+      <button id="btn-back" class="btn-outline" type="button">Back</button>
+      <button id="btn-step" class="btn-step" type="button">Step →</button>
+      <button id="btn-restart" class="btn-outline" type="button">Restart</button>
+    </div>
+  </div>
+</div>
+
+<script src="../app.js"></script>
+<script src="../theme.js"></script>
+<script src="mobile.js"></script>
+</body>
+</html>

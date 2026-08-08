@@ -1,7 +1,11 @@
 /* Readyset — coordinator console. Faithful build of the v2 design handoff.
-   Structure comes from 1px borders and space: no gradients, no shadows, no icons. */
+   Structure comes from 1px borders and space: no gradients, no shadows, no icons.
+   The console stage always runs dark (a product screen at 7am); the page frame
+   around it follows the visitor's light/dark theme via the --frame-* tokens. */
 
 :root {
+  color-scheme: light;
+
   --ink: #0B211B;
   --spruce: #14382E;
   --field: #5E7A6D;
@@ -30,8 +34,44 @@
   --amber-chip: #4A3413;
   --needed: #8A6A2E;
 
+  /* page frame — light theme */
+  --frame-bg: var(--paper);
+  --frame-ink: var(--ink);
+  --frame-muted: var(--field);
+  --frame-line: #C9C2AE;
+  --frame-disabled: #9A9482;
+  --btn-quiet-fg: var(--spruce);
+  --crumb-border: var(--spruce);
+  --ready: #0A7345; /* signal, darkened for contrast on paper */
+
   --sg: "Space Grotesk", sans-serif;
   --mono-f: "IBM Plex Mono", monospace;
+}
+
+:root[data-theme="dark"] {
+  color-scheme: dark;
+  --frame-bg: #06110D;
+  --frame-ink: var(--paper);
+  --frame-muted: #8FA79B;
+  --frame-line: #2E4A3E;
+  --frame-disabled: #62766C;
+  --btn-quiet-fg: #C9DED3;
+  --crumb-border: #5E7A6D;
+  --ready: var(--signal);
+}
+
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    color-scheme: dark;
+    --frame-bg: #06110D;
+    --frame-ink: var(--paper);
+    --frame-muted: #8FA79B;
+    --frame-line: #2E4A3E;
+    --frame-disabled: #62766C;
+    --btn-quiet-fg: #C9DED3;
+    --crumb-border: #5E7A6D;
+    --ready: var(--signal);
+  }
 }
 
 * { margin: 0; padding: 0; box-sizing: border-box; }
@@ -40,8 +80,8 @@
 
 body {
   font-family: Inter, sans-serif;
-  color: var(--ink);
-  background: var(--paper);
+  color: var(--frame-ink);
+  background: var(--frame-bg);
   font-size: 15px;
 }
 
@@ -56,8 +96,8 @@ body {
 }
 
 .mono { font-family: var(--mono-f); font-size: 12px; }
-.mono-12 { color: var(--field); }
-.meta-wide { letter-spacing: 0.14em; color: var(--field); }
+.mono-12 { color: var(--frame-muted); }
+.meta-wide { letter-spacing: 0.14em; color: var(--frame-muted); }
 
 /* ---------- header ---------- */
 
@@ -71,9 +111,16 @@ body {
   font-family: var(--sg);
   font-weight: 700;
   font-size: 19px;
-  color: var(--ink);
+  color: var(--frame-ink);
   text-decoration: none;
 }
+
+.viewlink {
+  color: var(--frame-muted);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+.viewlink:hover { color: var(--frame-ink); }
 
 .headline {
   font-family: var(--sg);
@@ -92,7 +139,7 @@ body {
   font-weight: 500;
   line-height: 1;
   letter-spacing: -0.03em;
-  color: var(--signal);
+  color: var(--ready);
   font-variant-numeric: tabular-nums;
 }
 
@@ -101,6 +148,8 @@ body {
 .controls { display: flex; align-items: center; justify-content: space-between; gap: 30px; }
 
 .controls-left { display: flex; align-items: center; gap: 10px; }
+
+.controls-right { display: flex; align-items: center; gap: 16px; }
 
 .btn-step, .btn-outline {
   font-family: Inter, sans-serif;
@@ -113,15 +162,15 @@ body {
 .btn-step {
   font-weight: 600;
   padding: 13px 26px;
-  background: var(--ink);
-  color: var(--paper);
-  border-color: var(--ink);
+  background: var(--frame-ink);
+  color: var(--frame-bg);
+  border-color: var(--frame-ink);
 }
 
 .btn-step.your-call {
   background: transparent;
-  color: var(--ctl-disabled);
-  border-color: var(--ctl-border);
+  color: var(--frame-disabled);
+  border-color: var(--frame-line);
   cursor: not-allowed;
 }
 
@@ -129,15 +178,34 @@ body {
   font-weight: 500;
   padding: 13px 22px;
   background: transparent;
-  color: var(--spruce);
-  border-color: var(--ctl-border);
+  color: var(--btn-quiet-fg);
+  border-color: var(--frame-line);
 }
-.btn-outline:hover { border-color: var(--spruce); }
+.btn-outline:hover { border-color: var(--btn-quiet-fg); }
 
-.btn-step:focus-visible, .btn-outline:focus-visible, .sort-toggle:focus-visible {
+.btn-step:focus-visible, .btn-outline:focus-visible, .theme-toggle:focus-visible {
+  outline: 3px solid var(--ready);
+  outline-offset: 2px;
+}
+.sort-toggle:focus-visible {
   outline: 3px solid var(--signal);
   outline-offset: 2px;
 }
+
+.theme-toggle {
+  width: 42px;
+  height: 42px;
+  border-radius: 9px;
+  border: 1px solid var(--frame-line);
+  background: transparent;
+  color: var(--frame-ink);
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+}
+.theme-toggle:hover { border-color: var(--btn-quiet-fg); }
 
 .caption { margin-left: 8px; }
 
@@ -150,10 +218,28 @@ body {
   padding: 7px 13px;
   border-radius: 999px;
   border: 1px solid transparent;
-  color: var(--field);
+  color: var(--frame-muted);
 }
-.crumbs li.cur { color: var(--ink); border-color: var(--spruce); }
-.crumbs li.done { color: var(--signal); }
+.crumbs li.cur { color: var(--frame-ink); border-color: var(--crumb-border); }
+.crumbs li.done { color: var(--ready); }
+
+/* small screens get pointed at the phone view */
+
+.mobile-hint { display: none; }
+@media (max-width: 720px) {
+  .mobile-hint {
+    display: block;
+    margin: 14px 16px 0;
+    padding: 11px 14px;
+    border: 1px solid var(--frame-line);
+    border-radius: 9px;
+    font-family: var(--mono-f);
+    font-size: 12px;
+    letter-spacing: 0.06em;
+    color: var(--frame-muted);
+  }
+  .mobile-hint a { color: var(--frame-ink); text-underline-offset: 3px; }
+}
 
 /* ---------- console shell ---------- */
 
@@ -179,6 +265,10 @@ body {
   font-weight: 500;
   color: var(--paper);
 }
+
+/* console-internal quiet text keeps its stage colour in both themes */
+.console .mono-12 { color: var(--field); }
+.console .meta-wide { color: var(--field); }
 
 /* ---------- intake ---------- */
 
@@ -484,7 +574,7 @@ body {
 
 /* ---------- footer ---------- */
 
-.page-foot { color: var(--field); }
+.page-foot { color: var(--frame-muted); }
 
 /* ---------- animation ---------- */
 
