@@ -59,6 +59,17 @@ curl -A "Mozilla/5.0" \
 node inline-fonts.mjs     # writes ../assets/fonts-inline.css
 ```
 
+## Founder portraits
+
+Two slots are waiting in the founders section. Drop portraits at
+`assets/img/06-founder-a.jpg` and `assets/img/07-founder-b.jpg`, replace the
+`.fo-slot` placeholder divs in `src/index.html` with
+`<img src="__IMG_06__" alt="…">`, fill in the names, and rebuild. The build
+matches images to tokens by filename prefix and skips any image whose token
+isn't in the page yet, so adding files early is harmless.
+
+4:5 crop, desaturated — the page applies its own duotone.
+
 ## Re-exporting imagery
 
 Source PNGs live in `assets/originals/`. To regenerate the inlined JPEGs (macOS):
