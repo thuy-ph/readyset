@@ -1,0 +1,159 @@
+<title>Readyset — The reel</title>
+
+<style>
+/*__FONTS__*/
+
+:root{
+  --ink:#0B211B; --spruce:#14382E; --field:#5E7A6D; --signal:#2FD284;
+  --paper:#F5F2E9; --on-ink-dim:#9CB2A6;
+  --rule-dark:rgba(245,242,233,.14);
+  --display:'Space Grotesk',system-ui,sans-serif;
+  --body:'Inter',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --gut:clamp(20px,4vw,72px);
+}
+*{box-sizing:border-box}
+body{margin:0;min-height:100svh;background:var(--ink);color:var(--paper);
+  font-family:var(--body);font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased;
+  display:flex;flex-direction:column}
+a{color:inherit}
+
+.grid-bg{position:fixed;inset:0;pointer-events:none;z-index:0;opacity:.5}
+.grid-bg::before{content:"";position:absolute;inset:0;
+  background-image:
+    repeating-linear-gradient(to right,rgba(245,242,233,.10) 0 1px,transparent 1px 160px),
+    repeating-linear-gradient(to bottom,rgba(245,242,233,.10) 0 1px,transparent 1px 160px);
+  -webkit-mask-image:radial-gradient(120% 90% at 50% 42%,#000 8%,transparent 74%);
+  mask-image:radial-gradient(120% 90% at 50% 42%,#000 8%,transparent 74%)}
+
+.wrap{max-width:1180px;margin-inline:auto;padding-inline:var(--gut);width:100%;position:relative;z-index:2}
+
+header{padding-block:26px}
+.bar{display:flex;justify-content:space-between;align-items:center;gap:20px}
+.lock{display:flex;align-items:center;gap:10px;text-decoration:none}
+.lock svg{width:22px;height:22px;overflow:visible}
+.lock svg path{fill:none;stroke:currentColor;stroke-width:9}
+.lock b{font-family:var(--display);font-weight:700;font-size:19px;letter-spacing:-.045em}
+.back{font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--field);text-decoration:none}
+.back:hover{color:var(--signal)}
+
+main{flex:1;display:flex;align-items:center;padding-block:clamp(30px,6vh,70px)}
+.split{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,340px);gap:clamp(30px,5vw,72px);
+  align-items:center;width:100%}
+@media(max-width:860px){.split{grid-template-columns:1fr;gap:34px}}
+
+.eyebrow{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.18em;
+  text-transform:uppercase;color:var(--signal);margin:0 0 18px}
+h1{font-family:var(--display);font-weight:700;margin:0 0 20px;letter-spacing:-.032em;
+  line-height:1.02;font-size:clamp(34px,5vw,64px);text-wrap:balance}
+.lede{font-size:clamp(17px,1.5vw,20px);line-height:1.55;color:var(--on-ink-dim);max-width:46ch}
+.meta{margin-top:30px;border-top:1px solid var(--rule-dark);display:flex;flex-direction:column}
+.meta div{display:grid;grid-template-columns:120px 1fr;gap:16px;padding:12px 0;
+  border-bottom:1px solid var(--rule-dark)}
+.meta .k{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--field)}
+.meta .v{font-size:14.5px;color:var(--paper)}
+
+/* the 9:16 frame — sized for a phone-shot reel */
+.frame{aspect-ratio:9/16;background:var(--spruce);border:1px solid var(--rule-dark);
+  position:relative;overflow:hidden;width:100%;max-width:340px;margin-inline:auto}
+.frame video{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;background:var(--spruce)}
+.frame video[hidden]{display:none}
+
+.slot{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;
+  justify-content:center;gap:16px;text-align:center;padding:30px}
+.slot i{width:34px;height:34px;border:1px solid var(--field);transform:rotate(45deg);display:block}
+.slot .t{font-family:var(--mono);font-size:10.5px;letter-spacing:.16em;text-transform:uppercase;color:var(--field);line-height:1.9}
+.slot .p{position:absolute;left:0;right:0;bottom:0;height:2px;background:var(--rule-dark);overflow:hidden}
+.slot .p b{display:block;height:100%;width:34%;background:var(--signal);animation:slide 2.6s ease-in-out infinite}
+@keyframes slide{0%{transform:translateX(-100%)}100%{transform:translateX(390%)}}
+@media (prefers-reduced-motion: reduce){.slot .p b{animation:none;width:100%;opacity:.35}}
+
+.cap{margin-top:14px;font-family:var(--mono);font-size:10px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--field);text-align:center}
+
+footer{padding-block:22px;border-top:1px solid var(--rule-dark)}
+.foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--field)}
+</style>
+
+<div class="grid-bg"></div>
+
+<header>
+  <div class="wrap bar">
+    <a class="lock" href="../">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <path d="M51 53 L77 88"/>
+        <path d="M22 88 V12 H58 a20 20 0 0 1 0 40 H22"/>
+      </svg>
+      <b>readyset</b>
+    </a>
+    <a class="back" href="../">← Back to the site</a>
+  </div>
+</header>
+
+<main>
+  <div class="wrap split">
+    <div>
+      <p class="eyebrow">Campaign · 01</p>
+      <h1>The 2.4&nbsp;day email.</h1>
+      <p class="lede">Thirty seconds on the request that sounds perfectly clear and still can&rsquo;t be sent to anyone. Shot on a phone, in the building it happens in.</p>
+
+      <div class="meta">
+        <div><span class="k">Format</span><span class="v">9:16 vertical · 30 seconds</span></div>
+        <div><span class="k">Opens on</span><span class="v">&ldquo;The Level 4 meeting rooms are too warm.&rdquo;</span></div>
+        <div><span class="k">Closes on</span><span class="v">2.4 days → 4 minutes</span></div>
+        <div><span class="k">Status</span><span class="v" id="status">Awaiting upload</span></div>
+      </div>
+    </div>
+
+    <div>
+      <div class="frame">
+        <video id="reel" playsinline controls preload="metadata" poster="poster.jpg" hidden>
+          <source src="reel.mp4" type="video/mp4">
+        </video>
+        <div class="slot" id="slot">
+          <i></i>
+          <span class="t">Reel · 9:16<br>drop reel.mp4 in this folder</span>
+          <span class="p"><b></b></span>
+        </div>
+      </div>
+      <p class="cap">Readyset · from reported to ready</p>
+    </div>
+  </div>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <span>Readyset · Campaign</span>
+    <span>VICTOR:AI Founder Games · Melbourne · 08.2026</span>
+  </div>
+</footer>
+
+<script>
+// Show the player only if reel.mp4 is actually there; otherwise keep the slot.
+(function(){
+  var v = document.getElementById('reel'),
+      slot = document.getElementById('slot'),
+      status = document.getElementById('status');
+
+  function ready(){
+    v.hidden = false;
+    slot.style.display = 'none';
+    status.textContent = 'Published';
+  }
+  function missing(){
+    v.hidden = true;
+    slot.style.display = '';
+    status.textContent = 'Awaiting upload';
+  }
+
+  v.addEventListener('loadeddata', ready);
+  v.addEventListener('canplay', ready);
+  v.addEventListener('error', missing, true);
+  v.querySelector('source').addEventListener('error', missing);
+
+  // preload="metadata" won't always fire on its own in every browser
+  try { v.load(); } catch (e) { missing(); }
+})();
+</script>

@@ -28,3 +28,13 @@ const left = html.match(/__IMG_\d+__/g);
 if (left) throw new Error('token with no image file: ' + [...new Set(left)].join(', '));
 writeFileSync(at('dist','index.html'), html);
 console.log(`built: ${(Buffer.byteLength(html)/1024/1024).toFixed(2)}MB · ${used}/${imgs.length} images inlined`);
+
+// ── reel page ────────────────────────────────────────────────────────────
+// Separate from the landing page; lives at /reel/ and shows a placeholder
+// until reel.mp4 is dropped alongside it.
+let reel = readFileSync(at('src', 'reel.html'), 'utf8');
+if (!reel.includes('/*__FONTS__*/')) throw new Error('reel: missing /*__FONTS__*/');
+reel = reel.replace('/*__FONTS__*/', () => fonts).replace(/<!--[\s\S]*?-->/g, '');
+mkdirSync(join(root, '..', 'reel'), { recursive: true });
+writeFileSync(join(root, '..', 'reel', 'index.html'), reel);
+console.log(`reel/index.html — ${(Buffer.byteLength(reel) / 1024).toFixed(0)}KB`);
