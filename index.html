@@ -108,7 +108,7 @@ nav.on-light{color:var(--ink)}
 .hero-top{display:flex;align-items:center;gap:18px}
 .hero-mark{width:clamp(38px,3.6vw,54px);height:auto;overflow:visible;flex:none}
 .hero-mark path{fill:none;stroke:var(--paper);stroke-width:9;stroke-linecap:square}
-.hero-mark .arrow{stroke:var(--signal);stroke-width:11}
+.hero-mark .arrow{stroke:var(--signal);stroke-width:9}
 .hero-mid{display:flex;align-items:center}
 .line{display:block;overflow:hidden}
 .line>span{display:block;will-change:transform}
@@ -132,8 +132,15 @@ nav.on-light{color:var(--ink)}
 /* ── stat row ────────────────────────────────────────────────────── */
 .stats{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border-top:1px solid var(--rule-light);margin-top:clamp(48px,8vh,96px)}
 @media(max-width:760px){.stats{grid-template-columns:repeat(2,1fr)}}
-.stat{padding:26px 22px 26px 0;border-right:1px solid var(--rule-light)}
-.stat:last-child{border-right:none}
+/* Even breathing room either side of every divider, while the first cell in
+   each row still aligns to the section's left edge. */
+.stat{padding:26px 30px;border-right:1px solid var(--rule-light)}
+.stat:first-child{padding-left:0}
+.stat:last-child{border-right:none;padding-right:0}
+@media(max-width:760px){
+  .stat:nth-child(2n+1){padding-left:0}
+  .stat:nth-child(2n){border-right:none;padding-right:0}
+}
 .stat .n{font-family:var(--display);font-weight:700;font-size:clamp(30px,3.6vw,52px);letter-spacing:-.04em;line-height:1;font-variant-numeric:tabular-nums}
 .stat .k{font-family:var(--mono);font-size:10.5px;letter-spacing:.11em;text-transform:uppercase;color:var(--field);margin-top:12px;line-height:1.5}
 
@@ -211,7 +218,15 @@ figure{margin:0;width:clamp(260px,28vw,420px);flex:none}
 .rails{display:grid;grid-template-columns:repeat(3,1fr);gap:1px;background:var(--rule-light);border-block:1px solid var(--rule-light)}
 @media(max-width:900px){.rails{grid-template-columns:1fr 1fr}}
 @media(max-width:600px){.rails{grid-template-columns:1fr}}
-.rail-c{background:var(--paper);padding:30px 26px 34px 0;display:flex;flex-direction:column;gap:10px}
+.rail-c{background:var(--paper);padding:30px 32px 34px;display:flex;flex-direction:column;gap:10px}
+.rail-c:nth-child(3n+1){padding-left:0}
+.rail-c:nth-child(3n){padding-right:0}
+@media(max-width:900px){
+  .rail-c{padding-inline:32px}
+  .rail-c:nth-child(2n+1){padding-left:0}
+  .rail-c:nth-child(2n){padding-right:0}
+}
+@media(max-width:600px){.rail-c{padding-inline:0}}
 .rail-c .n{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;color:var(--signal)}
 .rail-c p{font-size:15px;color:var(--on-paper-dim);line-height:1.5}
 
@@ -253,7 +268,7 @@ footer{background:var(--ink);color:var(--on-ink-dim);border-top:1px solid var(--
     <div class="lock">
       <svg viewBox="0 0 100 100" aria-hidden="true">
         <!-- leg first so the bowl paints over it -->
-        <path d="M50 52 L84 92" fill="none" stroke-width="9"/>
+        <path d="M51 53 L77 88" fill="none" stroke-width="9"/>
         <path d="M22 88 V12 H58 a20 20 0 0 1 0 40 H22" fill="none" stroke-width="9"/>
       </svg>
       <span>readyset</span>
@@ -268,7 +283,7 @@ footer{background:var(--ink);color:var(--on-ink-dim);border-top:1px solid var(--
   <div class="wrap hero-top">
     <svg class="hero-mark" viewBox="0 0 100 100" aria-label="Readyset">
       <!-- leg painted first, so the R body sits in front of it -->
-      <path id="mA" class="arrow" d="M50 52 L84 92"/>
+      <path id="mA" class="arrow" d="M51 53 L77 88"/>
       <path id="mR" d="M22 88 V12 H58 a20 20 0 0 1 0 40 H22"/>
     </svg>
     <p class="eyebrow reveal" data-fade>Property &amp; facilities operations · Melbourne</p>
@@ -579,7 +594,7 @@ footer{background:var(--ink);color:var(--on-ink-dim);border-top:1px solid var(--
     gsap.fromTo(el, {opacity:0, y:22}, {opacity:1, y:0, duration:.85, ease:'power3.out',
       scrollTrigger:{trigger:el, start:'top 88%'}});
   });
-  ['.chan', '.rails', '.hon'].forEach(sel => {
+  ['.chan', '.rails', '.hon', '.steps'].forEach(sel => {
     const box = document.querySelector(sel); if (!box) return;
     gsap.fromTo(box.querySelectorAll('[data-stagger]'), {opacity:0, y:26},
       {opacity:1, y:0, duration:.7, ease:'power3.out', stagger:.07,
