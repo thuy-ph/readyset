@@ -204,7 +204,8 @@ blockquote{margin:0;font-family:var(--display);font-weight:500;letter-spacing:-.
 /* ── founders ────────────────────────────────────────────── */
 .founders{display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,4vw,64px)}
 @media(max-width:760px){.founders{grid-template-columns:1fr;gap:44px}}
-.fo-photo{aspect-ratio:4/5;background:var(--spruce);border:1px solid var(--rule-dark);
+.fo-photo{aspect-ratio:4/5;max-width:clamp(180px,20vw,272px);
+  background:var(--spruce);border:1px solid var(--rule-dark);
   position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center}
 /* Same duotone as the location shots, lifted a little — faces go muddy at the
    grade that suits a plant room. */
