@@ -256,6 +256,17 @@ blockquote{margin:0;font-family:var(--display);font-weight:500;letter-spacing:-.
 .btn-quiet:hover{background:transparent;color:var(--paper);border-color:var(--paper)}
 .demo-jump{color:inherit;text-decoration:underline;text-underline-offset:3px}
 .demo-jump:hover{color:var(--paper)}
+section:not(.on-dark) .demo-jump:hover{color:var(--ink)}
+.mail-h{align-items:center}
+.mail-from{display:inline-flex;align-items:center;gap:12px}
+.avatar{width:34px;height:34px;border-radius:50%;background:var(--spruce);color:var(--paper);
+  display:inline-flex;align-items:center;justify-content:center;flex:none;
+  font-family:var(--mono);font-size:11px;letter-spacing:.06em}
+.nav-right{display:flex;align-items:center;gap:22px}
+.nav-demo{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+  color:currentColor;text-decoration:none;border:1px solid currentColor;padding:9px 14px;
+  transition:color .2s,border-color .2s}
+.nav-demo:hover{color:var(--signal)}
 
 footer{background:var(--ink);color:var(--field);border-top:1px solid var(--rule-dark);padding-block:24px}
 .foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
@@ -280,7 +291,10 @@ footer{background:var(--ink);color:var(--field);border-top:1px solid var(--rule-
       </svg>
       <b>readyset</b>
     </div>
-    <span class="mono">From reported to ready</span>
+    <div class="nav-right">
+      <span class="mono">From reported to ready</span>
+      <a class="nav-demo" href="demo/">Try the demo →</a>
+    </div>
   </div>
 </nav>
 
@@ -320,11 +334,12 @@ footer{background:var(--ink);color:var(--field);border-top:1px solid var(--rule-
   <div class="wrap narrow">
     <p class="eyebrow reveal" data-fade style="margin-bottom:26px">The request</p>
     <div class="mail reveal" data-fade>
-      <div class="mail-h"><span>FROM · e.carter@brightwell.com.au</span><span>MON 09:14</span></div>
+      <div class="mail-h"><span class="mail-from"><span class="avatar" aria-hidden="true">EC</span><span>FROM · e.carter@brightwell.com.au</span></span><span>MON 09:14</span></div>
       <div class="mail-b">&ldquo;The Level 4 meeting rooms are getting too warm in the afternoons. Can someone please look at the air conditioning?&rdquo;</div>
       <div class="mail-f">Two sentences · everything true · nothing actionable</div>
     </div>
     <p class="lede reveal" data-fade style="margin-top:34px">Nothing in that message is wrong. It is also not enough to send a technician. What happens next takes three and a half days, and involves four people who never speak to each other directly.</p>
+    <p class="mono reveal" data-fade style="margin-top:24px"><a class="demo-jump" href="demo/">Watch Readyset handle a request like this →</a></p>
   </div>
 </section>
 
@@ -400,6 +415,7 @@ footer{background:var(--ink);color:var(--field);border-top:1px solid var(--rule-
       <span class="lede" style="max-width:30ch">are the same job, reported twice, through two different channels.</span>
     </div>
     <p class="mono reveal" data-fade style="margin-top:34px">Harbourline Property Services scenario pack · fictional company, representative operation</p>
+    <p class="mono reveal" data-fade style="margin-top:18px"><a class="demo-jump" href="demo/">See both problems handled in the live demo →</a></p>
   </div>
 </section>
 
@@ -461,6 +477,7 @@ footer{background:var(--ink);color:var(--field);border-top:1px solid var(--rule-
       <div class="rail-c reveal" data-stagger><span class="n">05</span><h3>Every field shows its source</h3><p>Tenant-stated, register-matched or coordinator-entered. The record stands up in a dispute.</p></div>
       <div class="rail-c reveal" data-stagger><span class="n">06</span><h3>Nobody installs anything</h3><p>Emily keeps emailing. Marco keeps using simPRO. One forwarding rule is the whole integration.</p></div>
     </div>
+    <p class="mono reveal" data-fade style="margin-top:34px"><a class="demo-jump" href="demo/">Every guardrail is visible in the demo →</a></p>
   </div>
 </section>
 
