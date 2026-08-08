@@ -232,6 +232,11 @@ blockquote{margin:0;font-family:var(--display);font-weight:500;letter-spacing:-.
   padding:18px 26px;text-decoration:none;border:1px solid var(--signal);transition:background .22s,color .22s}
 .btn:hover{background:transparent;color:var(--signal)}
 .btn:focus-visible{outline:2px solid var(--paper);outline-offset:3px}
+.btn-row{display:flex;gap:12px;flex-wrap:wrap}
+.btn-quiet{background:transparent;color:var(--paper);border-color:var(--field)}
+.btn-quiet:hover{background:transparent;color:var(--paper);border-color:var(--paper)}
+.demo-jump{color:inherit;text-decoration:underline;text-underline-offset:3px}
+.demo-jump:hover{color:var(--paper)}
 
 footer{background:var(--ink);color:var(--field);border-top:1px solid var(--rule-dark);padding-block:24px}
 .foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
@@ -287,7 +292,7 @@ footer{background:var(--ink);color:var(--field);border-top:1px solid var(--rule-
 
   <div class="wrap hero-foot">
     <p class="lede reveal" data-fade>This is the true shape of a maintenance request in a mixed-use building. Everyone does their job correctly and it still takes three and a half days. Here is why.</p>
-    <p class="mono reveal" data-fade>Scroll ↓</p>
+    <p class="mono reveal" data-fade>Scroll ↓&ensp;·&ensp;<a class="demo-jump" href="demo/">skip to the live demo →</a></p>
   </div>
 </header>
 
@@ -509,7 +514,10 @@ footer{background:var(--ink);color:var(--field);border-top:1px solid var(--rule-
     </div>
     <div>
       <p class="lede reveal" data-fade style="margin-bottom:28px">We&rsquo;ll send back what was missing from every request, what it cost you in follow-ups, and which ones were the same job twice. No integration. No commitment.</p>
-      <a class="btn reveal" data-fade href="mailto:hello@readyset.build?subject=One%20week%20of%20our%20maintenance%20inbox">Start the audit →</a>
+      <div class="btn-row reveal" data-fade>
+        <a class="btn" href="mailto:hello@readyset.build?subject=One%20week%20of%20our%20maintenance%20inbox">Start the audit →</a>
+        <a class="btn btn-quiet" href="demo/">Watch the live demo →</a>
+      </div>
       <p class="mono reveal" data-fade style="margin-top:18px;font-size:10px">We read it, we report it, we delete it.</p>
     </div>
   </div>
