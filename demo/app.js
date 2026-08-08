@@ -1,415 +1,418 @@
-/* Readyset demo — scripted scene engine.
-   Steps run in order; steps with `gate` pause autoplay until the named
-   button is clicked (the human-decides moments). */
+/* Readyset — coordinator console. Vanilla-JS port of the v2 design handoff.
+   Five state variables drive everything; all display values are derived from `step`.
+   Steps 5 and 7 block deliberately: the AI cannot advance past a human decision. */
 
 (function () {
   "use strict";
 
-  const $ = (id) => document.getElementById(id);
-  const reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-  const els = {
-    clock: $("clock"),
-    playBtn: $("btn-play"),
-    stepBtn: $("btn-step"),
-    restartBtn: $("btn-restart"),
-    scenes: Array.from($("scenes").children),
-    intakeNote: $("intake-note"),
-    channelFeed: $("channel-feed"),
-    agentFeed: $("agent-feed"),
-    orderEmpty: $("order-empty"),
-    order: $("order"),
-    orderStatus: $("order-status"),
-    dupCard: $("dup-card"),
-    dupDone: $("dup-done"),
-    linkDupBtn: $("btn-link-dup"),
-    approveRow: $("approve-row"),
-    approveBtn: $("btn-approve"),
-    sentNote: $("sent-note"),
-    queueTag: $("wo-4796-tag"),
-    queueCard: $("wo-4796"),
-    queueCount: $("queue-count"),
-    metricBaseline: document.querySelector(".metric-baseline"),
+  /* Demo tuning (kept configurable per handoff) */
+  const CONFIG = {
+    replyDelayMs: 1100,      // 300–3000: how long Emily's reply takes at step 4
+    includeHazardBeat: true, // false ends the arc at step 8
+    showSourceNotes: true,   // false hides provenance notes on filled fields
   };
 
-  /* ---------- helpers ---------- */
+  const CAPTIONS = {
+    1: "New email lands in the stream.",
+    2: "Extraction runs — three fields stall the job.",
+    3: "One clarifying question goes back to Emily.",
+    4: "Her reply fills the gaps.",
+    5: "Duplicate suggested — your call.",
+    6: "Linked, not merged.",
+    7: "Work order composed. Approve when ready.",
+    8: "Handed to Maximo. Counter frozen.",
+    9: "Hazard bypasses automation entirely.",
+  };
 
-  let clockSeconds = 0;
-  let clockAnim = null;
+  const PRI = {
+    P1: { bg: "#4A3413", fg: "#E5B25C", rail: "#C08A2E" },
+    P2: { bg: "#2C5648", fg: "#F5F2E9", rail: "#2C5648" },
+    P3: { bg: "#1D4034", fg: "#7FB79A", rail: "#3E6355" },
+    P4: { bg: "#16332B", fg: "#5E7A6D", rail: "#24473B" },
+  };
 
-  function fmt(s) {
-    return Math.floor(s / 60) + ":" + String(Math.floor(s % 60)).padStart(2, "0");
-  }
+  const CHIP = {
+    READY: { bg: "#2FD284", fg: "#0B211B", border: "#2FD284" },
+    ESCALATED: { bg: "transparent", fg: "#E5B25C", border: "#C08A2E" },
+    CLARIFYING: { bg: "#1D4034", fg: "#C9DED3", border: "#3E6355" },
+    NEW: { bg: "#1D4034", fg: "#A8C4B6", border: "#3E6355" },
+  };
 
-  function setClock(target, instant) {
-    if (clockAnim) cancelAnimationFrame(clockAnim);
-    if (instant || reduced) {
-      clockSeconds = target;
-      els.clock.textContent = fmt(target);
-      return;
-    }
-    const from = clockSeconds;
-    const t0 = performance.now();
-    const dur = 550;
-    const tick = (now) => {
-      const p = Math.min(1, (now - t0) / dur);
-      const eased = 1 - Math.pow(1 - p, 3);
-      clockSeconds = from + (target - from) * eased;
-      els.clock.textContent = fmt(clockSeconds);
-      if (p < 1) clockAnim = requestAnimationFrame(tick);
+  const GATE_TAG_COLOR = {
+    PASSED: "#7FB79A",
+    WAITING: "#F5F2E9",
+    "N/A": "#5E7A6D",
+    HUMAN: "#7FB79A",
+    ESCALATED: "#E5B25C",
+  };
+
+  const $ = (id) => document.getElementById(id);
+  const els = {
+    clock: $("clock"),
+    clockState: $("clock-state"),
+    stepBtn: $("btn-step"),
+    backBtn: $("btn-back"),
+    restartBtn: $("btn-restart"),
+    caption: $("caption"),
+    crumbs: $("crumbs"),
+    streamCount: $("stream-count"),
+    sortBtn: $("btn-sort"),
+    cards: $("cards"),
+    work: $("work"),
+    hazardSlot: $("hazard-slot"),
+    agentFeed: $("agent-feed"),
+    gateRows: $("gate-rows"),
+  };
+
+  const state = { step: 1, seconds: 0, linked: null, awaiting: false, sort: "priority" };
+  let replyTimer = null;
+  let prev = null; // previous derived snapshot, for animation gating
+
+  const maxStep = () => (CONFIG.includeHazardBeat ? 9 : 8);
+  const blocked = (s) => s === 5 || s === 7;
+  const esc = (t) => t.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+
+  /* ---------- derived state ---------- */
+
+  function derive() {
+    const s = state.step;
+    const replied = s > 4 || (s === 4 && !state.awaiting);
+    const linked = state.linked === "linked";
+    const emilyStatus = s >= 7 ? "READY" : s >= 3 ? "CLARIFYING" : "NEW";
+    return {
+      step: s,
+      replied,
+      linked,
+      resolved: state.linked !== null && s >= 6,
+      emilyStatus,
+      selected: s >= 2,
+      hazard: s >= 9,
+      showDupe: s >= 5,
+      dupeOpen: s === 5,
+      showOrder: s >= 7,
+      approved: s >= 8,
+      awaiting: s === 4 && state.awaiting,
+      frozen: s >= 8,
+      logLen: logEntries(s, replied, linked, state.awaiting).length,
+      msgLen: (s >= 3 ? 1 : 0) + (replied ? 1 : 0),
     };
-    clockAnim = requestAnimationFrame(tick);
   }
 
-  function channelCard({ id, chan, from, text }) {
-    const li = document.createElement("li");
-    li.className = "feed-card";
-    li.id = id;
-    li.innerHTML =
-      '<div class="feed-meta"><span class="chan">' + chan + "</span><span>" + from + "</span></div>" +
-      "<p>" + text + "</p>";
-    els.channelFeed.appendChild(li);
-    return li;
+  function logEntries(s, replied, linked, awaiting) {
+    const L = (text, sub, amber) => ({ text, sub: sub || "", amber: !!amber });
+    const log = [L("4 requests across 4 channels. Triaging by priority.", "Nothing dispatched without you.")];
+    if (s >= 2) log.push(L("Reading Emily’s email — 3 of 5 dispatch fields missing.", "Site and contact resolved from her tenancy record."));
+    if (s >= 3) log.push(L("Drafting one ask-back — a single plain-language message, not a form.", "Sent directly to Emily; you see it here as it goes."));
+    if (s >= 3) log.push(L("No hazard keywords. Emergency filter passed.", "Hazards never reach this path."));
+    if (s === 3 || (s === 4 && awaiting)) log.push(L("Reply usually lands in minutes — Emily just hits reply.", "No portal, no login."));
+    if (replied && s >= 4) log.push(L("All five fields grounded — every value carries its source.", ""));
+    if (s >= 5) log.push(L("PF-4796 — “water dripping in level 2 ceiling”, portal, 3 hours earlier. Looks like the same leak.", "Flagging for you. I don’t merge.", true));
+    if (s >= 6) log.push(L(linked ? "Linked to PF-4796 on your confirmation. Both reports kept." : "Kept separate on your call. Both stay open.", "Nothing deleted."));
+    if (s >= 7) log.push(L("Work order composed. Plumbing suggested from the asset class.", "Dispatch and scope stay with you."));
+    if (s >= 8) log.push(L("Handed to Maximo as WO-4831. Emily notified.", "Time-to-ready 4:07 against a 2.4-day baseline."));
+    if (s >= 9) log.push(L("PF-4836 — “burning smell near the switchboard”. Hazard keywords matched.", "Handed straight to the on-call manager. I only spot them fast.", true));
+    return log;
   }
 
-  function agentLine(html, mood) {
-    const li = document.createElement("li");
-    li.className = "agent-line" + (mood ? " " + mood : "");
-    li.innerHTML = html;
-    els.agentFeed.appendChild(li);
-    li.scrollIntoView({ block: "nearest", behavior: reduced ? "auto" : "smooth" });
-    return li;
+  /* ---------- render ---------- */
+
+  function render() {
+    const d = derive();
+    const p = prev; // null on init/restart
+    const fwd = (cond) => cond(d) && (!p || !cond(p)); // appeared this transition
+
+    renderHeader(d);
+    renderControls(d);
+    renderCrumbs(d);
+    renderCards(d, p, fwd);
+    renderWork(d, p, fwd);
+    renderAgent(d, p, fwd);
+    renderGates(d);
+
+    prev = d;
   }
 
-  function msgCard({ head, stamp, text, reply, typeIt, onDone }) {
-    const li = document.createElement("li");
-    li.className = "msg-card" + (reply ? " reply" : "");
-    li.innerHTML =
-      '<div class="msg-head"><span>' + head + "</span><span>" + stamp + "</span></div><p></p>";
-    els.agentFeed.appendChild(li);
-    const p = li.querySelector("p");
-    if (!typeIt || reduced) {
-      p.textContent = text;
-      li.scrollIntoView({ block: "nearest", behavior: reduced ? "auto" : "smooth" });
-      if (onDone) onDone();
-      return li;
-    }
-    const textNode = document.createTextNode("");
-    const caret = document.createElement("span");
-    caret.className = "typing-caret";
-    p.appendChild(textNode);
-    p.appendChild(caret);
-    finishTyping = () => {
-      textNode.nodeValue = text;
-      caret.remove();
-      finishTyping = null;
+  function fmtClock(secs) {
+    return Math.floor(secs / 60) + ":" + String(secs % 60).padStart(2, "0");
+  }
+
+  function renderHeader(d) {
+    const secs = d.frozen ? 247 : state.seconds;
+    els.clock.textContent = fmtClock(secs);
+    els.clockState.textContent = d.frozen ? "frozen on approval" : "counting since 12:18";
+  }
+
+  function renderControls(d) {
+    const b = blocked(d.step);
+    els.stepBtn.textContent = b ? "Your call" : "Step →";
+    els.stepBtn.classList.toggle("your-call", b);
+    els.stepBtn.setAttribute("aria-disabled", String(b));
+    els.caption.textContent = b
+      ? d.step === 5
+        ? "waiting on you — link or keep separate"
+        : "waiting on you — approve the work order"
+      : CAPTIONS[d.step];
+    els.sortBtn.textContent = state.sort === "priority" ? "by priority" : "by newest";
+  }
+
+  function renderCrumbs(d) {
+    const defs = [["INTAKE", 1], ["READ", 2], ["ASK-BACK", 3], ["REPLY", 4], ["DEDUPE", 5], ["READY", 7], ["APPROVED", 8]];
+    let cur = 0;
+    defs.forEach((c, i) => { if (d.step >= c[1]) cur = i; });
+    els.crumbs.innerHTML = defs
+      .map((c, i) => `<li class="${i === cur ? "cur" : i < cur ? "done" : ""}">${c[0]}</li>`)
+      .join("");
+  }
+
+  function requestList(d) {
+    const emily = {
+      id: "PF-4831", channel: "EMAIL", who: "Emily Tran · tenant, level 2", time: "12:18",
+      excerpt: "Water leaking from the ceiling near our office again — it’s getting worse.",
+      status: d.emilyStatus, priority: "P2", sel: d.selected,
+      linked: d.linked, linkLabel: "LINKED → PF-4796", slide: !prev,
     };
-    let i = 0;
-    const t0 = performance.now();
-    const CPS = 140; // chars/sec; time-based so background-tab timer throttling can't stall it
-    const step = () => {
-      i = Math.min(text.length, Math.max(i + 1, Math.ceil(((performance.now() - t0) / 1000) * CPS)));
-      textNode.nodeValue = text.slice(0, i);
-      li.scrollIntoView({ block: "nearest" });
-      if (i < text.length) {
-        typeTimer = setTimeout(step, 18);
-      } else {
-        caret.remove();
-        finishTyping = null;
-        if (onDone) onDone();
-      }
+    const base = [
+      { id: "PF-4796", channel: "PORTAL", who: "Marcus Webb · tenant, level 2", time: "09:12", excerpt: "Water dripping in level 2 ceiling, Building A", status: "NEW", priority: "P2", linked: d.linked, linkLabel: "LINKED → PF-4831" },
+      { id: "PF-4802", channel: "PHONE", who: "transcript · reception", time: "10:40", excerpt: "…loading dock roller door sticking halfway…", status: "CLARIFYING", priority: "P3" },
+      { id: "PF-4788", channel: "SMS", who: "Priya Raman · tenant, level 3", time: "08:05", excerpt: "Aircon in 3.05 running cold overnight", status: "READY", priority: "P4" },
+    ];
+    const hazard = {
+      id: "PF-4836", channel: "SMS", who: "unregistered mobile · level 3", time: "12:24",
+      excerpt: "burning smell near the switchboard on L3", status: "ESCALATED", priority: "P1",
+      slide: prev && !prev.hazard,
     };
-    typeTimer = setTimeout(step, 120);
-    return li;
+    let list = d.hazard ? [hazard, emily].concat(base) : [emily].concat(base);
+    const byTime = (a, b) => (a.time < b.time ? 1 : -1);
+    return state.sort === "priority"
+      ? list.slice().sort((a, b) => (a.priority === b.priority ? byTime(a, b) : a.priority < b.priority ? -1 : 1))
+      : list.slice().sort(byTime);
   }
 
-  function setField(id, value, cls, src, srcOk) {
-    const f = $(id);
-    const dd = f.querySelector("dd");
-    dd.textContent = value;
-    dd.className = cls || "";
-    const srcEl = f.querySelector(".src");
-    srcEl.textContent = src || "";
-    srcEl.className = "src" + (srcOk ? " ok" : "");
-    if (!reduced) {
-      f.classList.remove("flash");
-      void f.offsetWidth;
-      f.classList.add("flash");
+  function renderCards(d) {
+    const list = requestList(d);
+    els.streamCount.textContent = list.length + " open";
+    els.cards.innerHTML = list
+      .map((r) => {
+        const pri = PRI[r.priority];
+        const chip = CHIP[r.status];
+        return `<li class="card${r.sel ? " sel" : ""}${r.slide ? " an-slide" : ""}" style="border-left-color:${pri.rail}">
+          <div class="card-meta">
+            <span class="chips">
+              <span class="chip-pri" style="background:${pri.bg};color:${pri.fg}">${r.priority}</span>
+              <span class="chip-chan">${r.channel}</span>
+            </span>
+            <span class="rid">${r.id}</span>
+          </div>
+          <div class="card-who">${r.who}</div>
+          <div class="card-excerpt">${r.excerpt}</div>
+          <div class="card-foot">
+            <span class="chip-status" style="background:${chip.bg};color:${chip.fg}">${r.status}</span>
+            <span class="card-time">${r.time}</span>
+          </div>
+          ${r.linked ? `<div class="card-linked">${r.linkLabel}</div>` : ""}
+        </li>`;
+      })
+      .join("");
+  }
+
+  function renderWork(d, p, fwd) {
+    const chip = CHIP[d.emilyStatus];
+    const src = (t) => (CONFIG.showSourceNotes ? t : "");
+    const fieldDefs = [
+      ["SITE", "Building A · Southbank", "tenancy record", d.step >= 2, p && p.step >= 2],
+      ["ZONE", "Level 2 — above meeting room 2.14", "from reply", d.replied, p && p.replied],
+      ["ASSET", "Ceiling void — chilled-water pipework", "reply + register", d.replied, p && p.replied],
+      ["ACCESS", "Tomorrow 7–9am, tenant on site from 7", "from reply", d.replied, p && p.replied],
+      ["CONTACT", "Emily Tran · 0412 884 013", "mobile on file", d.step >= 2, p && p.step >= 2],
+    ];
+    const nFilled = fieldDefs.filter((f) => f[3]).length;
+
+    const fields = fieldDefs
+      .map(([label, value, source, filled, was]) => `<div class="frow">
+        <div class="flabel">${label}</div>
+        <div class="fvalue${filled ? "" : " missing"}${filled && !was ? " an-fade" : ""}">${filled ? value : "— missing"}</div>
+        <div class="fsrc${filled ? "" : " needed"}">${filled ? src(source) : "needed"}</div>
+      </div>`)
+      .join("");
+
+    const dupTag = d.resolved ? (d.linked ? "LINKED BY HUMAN" : "KEPT SEPARATE") : "LIKELY DUPLICATE · 87%";
+    const dup = !d.showDupe ? "" : `<div class="dup-panel${fwd((x) => x.showDupe) ? " an-fade-340" : ""}">
+      <div class="dup-head"><span class="dup-tag">${dupTag}</span><span class="rid">PF-4796</span></div>
+      <div class="dup-reasons">
+        <div>· same zone — level 2</div>
+        <div>· same asset class — water</div>
+        <div>· reported 3 hours apart</div>
+        <div>· different channel, different reporter</div>
+      </div>
+      <div class="dup-rationale">Suggested, never auto-merged — a wrong merge silently kills a real issue. Nothing is deleted either way.</div>
+      ${d.dupeOpen ? `<div class="dup-actions">
+        <button class="btn-link" id="btn-link-dup" type="button">Link as duplicate</button>
+        <button class="btn-separate" id="btn-keep-sep" type="button">Keep separate</button>
+      </div>` : ""}
+      ${d.resolved ? `<div class="dup-outcome">${d.linked ? "Linked, not merged. Both reports kept." : "Kept separate. Both reports stay open and independent."}</div>` : ""}
+    </div>`;
+
+    const orderRows = [
+      ["REPORTS", d.linked ? "PF-4831 + PF-4796" : "PF-4831", d.linked ? "(both kept)" : "(kept separate)"],
+      ["SCOPE", "Ceiling void leak — Level 2, above 2.14", ""],
+      ["ACCESS", "Tomorrow 7–9am · Emily Tran on site", ""],
+      ["SUGGESTED TRADE", "Plumbing", "suggested, dispatch stays with you"],
+      ["DESTINATION", "Maximo — WO draft", "source of record unchanged"],
+    ];
+    const order = !d.showOrder ? "" : `<div class="order-panel${fwd((x) => x.showOrder) ? " an-fade-340" : ""}">
+      <div class="order-head">
+        <div class="order-title">Work order — dispatch ready</div>
+        <span class="order-tag">${d.approved ? "APPROVED" : "READY"}</span>
+      </div>
+      <div class="order-rows">${orderRows
+        .map(([l, v, n]) => `<div class="orow"><div class="olabel">${l}</div><div class="ovalue">${v}${n ? ` <span class="onote">${n}</span>` : ""}</div></div>`)
+        .join("")}</div>
+      ${d.step === 7 ? `<button class="btn-approve" id="btn-approve" type="button">Approve work order</button>` : ""}
+      ${d.approved ? `<div class="approved-block${fwd((x) => x.approved) ? " an-fade-320" : ""}">
+        <div class="approved-meta">HANDED OFF · 12:22 · MAXIMO</div>
+        <div class="approved-text">Sent to your work-order system. Emily notified: “Your report is logged as WO-4831 — a plumber is booked for tomorrow 7–9am.”</div>
+        <div class="approved-note">Dispatch and scope stay with you. Readyset does not book trades.</div>
+      </div>` : ""}
+    </div>`;
+
+    els.work.innerHTML = `<div class="work-head">
+        <div class="idgroup"><span class="rid">PF-4831</span><span class="rmeta">P2 · EMAIL · RECEIVED 12:18</span></div>
+        <span class="status-pill" style="background:${chip.bg};color:${chip.fg};border-color:${chip.border}">${d.emilyStatus}</span>
+      </div>
+      <div class="orig-panel">
+        <div class="orig-label">ORIGINAL · VERBATIM · EMAIL</div>
+        <div class="orig-body">“Hi, there’s water leaking from the ceiling near our office again. Can someone come look at it? It’s getting worse. – Emily”</div>
+      </div>
+      <div class="fields-block">
+        <div class="fields-head">
+          <div class="fields-label">DISPATCH FIELDS</div>
+          <div class="fields-progress">${nFilled} / 5 resolved</div>
+        </div>
+        ${fields}
+      </div>
+      ${dup}${order}`;
+
+    const linkBtn = $("btn-link-dup");
+    if (linkBtn) {
+      linkBtn.addEventListener("click", () => decide("linked"));
+      $("btn-keep-sep").addEventListener("click", () => decide("separate"));
     }
+    const approveBtn = $("btn-approve");
+    if (approveBtn) approveBtn.addEventListener("click", () => enter(8));
   }
 
-  function setStatus(text, cls) {
-    els.orderStatus.textContent = text;
-    els.orderStatus.className = "tag " + (cls || "");
+  function renderAgent(d, p, fwd) {
+    els.hazardSlot.innerHTML = !d.hazard ? "" : `<div class="hazard-banner${fwd((x) => x.hazard) ? " an-fade-320" : ""}">
+      <div class="hazard-tag">ESCALATED · HUMAN</div>
+      <div class="hazard-text">Possible hazard — routed straight to on-call staff. Readyset never automates emergencies.</div>
+    </div>`;
+
+    const log = logEntries(d.step, d.replied, d.linked, state.awaiting);
+    const prevLogLen = p ? p.logLen : 0;
+    const logHtml = log
+      .map((l, i) => `<div class="log-entry${i >= prevLogLen ? " an-fade" : ""}">
+        <div class="dot${l.amber ? " amber" : ""}"></div>
+        <div class="log-body"><div class="log-text">${l.text}</div>${l.sub ? `<div class="log-sub">${l.sub}</div>` : ""}</div>
+      </div>`)
+      .join("");
+
+    const messages = [];
+    if (d.step >= 3) messages.push({ who: "TO: EMILY TRAN", at: "SENT · T+0:42", text: "Thanks Emily — quick check so we can dispatch straight away: which room or area is the leak closest to, and is it OK for a contractor to access it tomorrow 7–9am?" });
+    if (d.replied) messages.push({ who: "FROM: EMILY TRAN", at: "REPLY · T+2:58", text: "It’s right above meeting room 2.14. And yes, morning is fine — I’m in from 7." });
+    const prevMsgLen = p ? p.msgLen : 0;
+    const msgHtml = messages
+      .map((m, i) => `<div class="msg-card${i >= prevMsgLen ? " an-fade-320" : ""}">
+        <div class="msg-head"><span>${m.who}</span><span>${m.at}</span></div>
+        <div class="msg-text">${m.text}</div>
+      </div>`)
+      .join("");
+
+    const waiting = d.awaiting ? `<div class="waiting">WAITING FOR REPLY…</div>` : "";
+    els.agentFeed.innerHTML = logHtml + msgHtml + waiting;
   }
 
-  function setScene(name) {
-    let hit = false;
-    els.scenes.forEach((li) => {
-      if (li.dataset.scene === name) {
-        li.className = "active";
-        hit = true;
-      } else {
-        li.className = hit ? "" : "done";
-      }
-    });
+  function renderGates(d) {
+    const s = d.step;
+    const defs = [
+      ["Emergency filter", s >= 9 ? "ESCALATED" : s >= 3 ? "PASSED" : "N/A"],
+      ["Duplicate confirm", s >= 6 ? "PASSED" : s === 5 ? "WAITING" : "N/A"],
+      ["Approve to system of record", s >= 8 ? "PASSED" : s >= 7 ? "WAITING" : "N/A"],
+      ["Dispatch & scope", "HUMAN"],
+    ];
+    els.gateRows.innerHTML = defs
+      .map(([label, tag]) => `<div class="gate-row">
+        <div class="gate-label">${esc(label)}</div>
+        <span class="gate-tag" style="color:${GATE_TAG_COLOR[tag]}">${tag}</span>
+      </div>`)
+      .join("");
   }
 
-  const askText =
-    "Hi Emily — on it. Two quick things so we can book the technician first try:\n" +
-    "1. Which room on level 4 — 4.02 (small) or 4.06 (boardroom)?\n" +
-    "2. When can they get in today, and who should they ask for?\n" +
-    "— Readyset, for 140 Collins facilities";
+  /* ---------- transitions ---------- */
 
-  const replyText =
-    "It's 4.06, the boardroom. Any time after 2pm — ask for me at level 4 reception. Thanks! — Emily";
-
-  const ackText =
-    "Booked — your reference is WO-4831. A technician is attending the level 4 boardroom after 2pm today. We'll update you here.";
-
-  /* ---------- the script ---------- */
-
-  const steps = [
-    { scene: "intake", d: 500, run() {
-      els.intakeNote.textContent = "4 channels · live";
-      channelCard({ id: "c-emily", chan: "EMAIL", from: "Emily Tran · tenant, level 4",
-        text: "Hi, the big meeting room on level 4 is freezing again. Same as last month — can someone take a look?" });
-    }},
-    { d: 800, run() {
-      channelCard({ id: "c-sms", chan: "SMS", from: "0412 ··· ··· · tenant, level 2",
-        text: "toilet on level 2 still leaking??" });
-    }},
-    { d: 800, run() {
-      channelCard({ id: "c-phone", chan: "PHONE", from: "transcript · reception",
-        text: "…lift two is making a grinding noise when it stops on five…" });
-    }},
-    { d: 800, run() {
-      channelCard({ id: "c-switch", chan: "EMAIL", from: "J. Okafor · tenant, ground",
-        text: "There's a burning smell near the switchboard on the ground floor." });
-    }},
-    { d: 900, run() {
-      agentLine("4 new requests across 3 channels. Triaging.");
-    }},
-    { d: 1100, run() {
-      const c = $("c-switch");
-      const tag = document.createElement("span");
-      tag.className = "tag t-escalated";
-      tag.textContent = "ESCALATED · HUMAN";
-      c.appendChild(tag);
-      agentLine("Possible electrical hazard — handed straight to the on-call manager.<span class='why'>The agent never manages emergencies. It only spots them fast.</span>", "warn");
-    }},
-    { d: 1300, run() {
-      $("c-sms").classList.add("dim");
-      $("c-phone").classList.add("dim");
-      $("c-switch").classList.add("dim");
-      agentLine("2 routine requests queued. Focusing on Emily's email — 4 of 6 dispatch fields are missing.");
-    }},
-    { scene: "read", d: 1200, run() {
-      $("c-emily").classList.add("focus");
-      els.orderEmpty.hidden = true;
-      els.order.hidden = false;
-      setStatus("INCOMPLETE", "tag-muted");
-      setClock(8);
-      setField("f-issue", "HVAC — no heating (recurring)", "confirmed", "0.96", true);
-      setField("f-site", "140 Collins St", "confirmed", "directory", true);
-      setField("f-zone", "Level 4 — “the big meeting room”", "ambig", "4.02 or 4.06?");
-      setField("f-asset", "AC-L4-··", "ambig", "depends on room");
-      setField("f-access", "missing", "pending", "");
-      setField("f-contact", "missing", "pending", "");
-    }},
-    { d: 1600, run() {
-      agentLine("Two fields missing, two ambiguous. Drafting one ask-back — a single plain-language message, not a form.");
-    }},
-    { scene: "askback", d: 1300, async: true, run(next) {
-      setClock(42);
-      setStatus("WAITING ON REPLY", "t-waiting");
-      msgCard({ head: "TO: EMILY TRAN", stamp: "SENT · T+0:42", text: askText, typeIt: true, onDone: next });
-    }},
-    { d: 1400, run() {
-      agentLine("Reply usually lands in minutes — Emily just hits reply. No portal, no login.<span class='stamp'>waiting…</span>");
-    }},
-    { scene: "reply", d: 1800, run() {
-      setClock(178);
-      msgCard({ head: "FROM: EMILY TRAN", stamp: "REPLY · T+2:58", text: replyText, reply: true });
-    }},
-    { d: 1300, run() {
-      setClock(185);
-      setField("f-zone", "4.06 — Boardroom, level 4", "confirmed", "from reply", true);
-      setField("f-asset", "AC-L4-06", "confirmed", "resolved", true);
-      setField("f-access", "Today, after 14:00", "confirmed", "from reply", true);
-      setField("f-contact", "Emily Tran — level 4 reception", "confirmed", "from reply", true);
-      agentLine("All six fields grounded — every value logged with its source.", "good");
-    }},
-    { scene: "dedupe", d: 1500, run() {
-      agentLine("Checking against 14 open orders…");
-    }},
-    { d: 1100, gate: "linkDup", run() {
-      setClock(196);
-      setStatus("DUPLICATE?", "t-dup");
-      els.dupCard.hidden = false;
-      els.linkDupBtn.classList.add("armed");
-      agentLine("WO-4796 — “aircon not working, level 4”, phoned in 2 days ago — looks like the same issue. Flagging for the coordinator.", "warn");
-    }},
-    { d: 700, run() {
-      els.dupCard.hidden = true;
-      els.dupDone.hidden = false;
-      els.queueCard.classList.add("linked");
-      els.queueTag.textContent = "LINKED → WO-4831";
-      els.queueTag.className = "tag t-sent";
-      els.queueCount.textContent = "0 unassigned";
-      setClock(220);
-      agentLine("Linked by the coordinator. Both reporters now get updates from one order.", "good");
-    }},
-    { scene: "ready", d: 1000, gate: "approve", run() {
-      setStatus("READY", "t-ready");
-      els.approveRow.hidden = false;
-      els.approveBtn.classList.add("armed");
-      agentLine("Work order is dispatch-ready. Nothing is written to your system of record without a human click.");
-    }},
-    { d: 600, run() {
-      setClock(252, true);
-      els.clock.classList.add("done");
-      els.metricBaseline.innerHTML = "team baseline: <s>2.4 days</s>";
-      els.approveRow.hidden = true;
-      els.sentNote.hidden = false;
-      setStatus("SENT ✓", "t-sent");
-    }},
-    { d: 900, run() {
-      msgCard({ head: "TO: EMILY TRAN", stamp: "ACK · T+4:12", text: ackText });
-    }},
-    { d: 1100, run() {
-      agentLine("<strong>Reported → ready in 4 min 12 s.</strong> Team baseline: 2.4 days. <a class='how-link' href='#how-it-works' style='color:var(--signal)'>See how it works ↓</a>", "good");
-      els.playBtn.textContent = "Play it again";
-      els.playBtn.classList.remove("playing");
-    }},
-  ];
-
-  /* ---------- engine ---------- */
-
-  let idx = 0;
-  let playing = false;
-  let timer = null;
-  let typeTimer = null;
-  let waitingGate = null;
-  let finishTyping = null;
-
-  function clearTimers() {
-    clearTimeout(timer);
-    clearTimeout(typeTimer);
-    if (finishTyping) finishTyping();
-    timer = null;
-  }
-
-  function runStep(i, thenAuto) {
-    const s = steps[i];
-    if (!s) return;
-    if (s.scene) setScene(s.scene);
-    if (s.async && thenAuto && !reduced) {
-      s.run(() => { idx = i + 1; if (playing) queueNext(); });
-      if (s.gate) armGate(s.gate);
-      return; // next queued by onDone
+  function enter(step) {
+    clearTimeout(replyTimer);
+    state.step = step;
+    state.awaiting = false;
+    if (step < 6) state.linked = null;
+    if (step === 4) {
+      state.awaiting = true;
+      replyTimer = setTimeout(() => {
+        state.awaiting = false;
+        render();
+      }, CONFIG.replyDelayMs);
     }
-    s.run(function () {});
-    idx = i + 1;
-    if (s.gate) {
-      armGate(s.gate);
-      return; // wait for human
-    }
-    if (thenAuto && playing) queueNext();
+    render();
   }
 
-  function queueNext() {
-    if (idx >= steps.length) { playing = false; return; }
-    const s = steps[idx];
-    timer = setTimeout(() => runStep(idx, true), reduced ? 350 : s.d);
+  function decide(choice) {
+    clearTimeout(replyTimer);
+    state.linked = choice;
+    state.step = 6;
+    state.awaiting = false;
+    render();
   }
 
-  function armGate(name) {
-    playing = false;
-    els.playBtn.classList.remove("playing");
-    waitingGate = name;
-    els.stepBtn.disabled = true;
-  }
-
-  function gateCleared() {
-    waitingGate = null;
-    els.stepBtn.disabled = false;
-    playing = true;
-    els.playBtn.classList.add("playing");
-    queueNext();
-  }
-
-  els.linkDupBtn.addEventListener("click", () => {
-    if (waitingGate !== "linkDup") return;
-    els.linkDupBtn.classList.remove("armed");
-    gateCleared();
-  });
-
-  els.approveBtn.addEventListener("click", () => {
-    if (waitingGate !== "approve") return;
-    els.approveBtn.classList.remove("armed");
-    gateCleared();
-  });
-
-  els.playBtn.addEventListener("click", () => {
-    if (idx >= steps.length) { reset(); }
-    if (waitingGate) return; // gates need their own click
-    if (playing) {
-      playing = false;
-      clearTimers();
-      els.playBtn.textContent = "Resume";
-      els.playBtn.classList.remove("playing");
+  function go(dir) {
+    const s = state.step;
+    if (dir > 0) {
+      if (blocked(s)) return;
+      enter(Math.min(maxStep(), s + 1));
     } else {
-      playing = true;
-      els.playBtn.textContent = "Pause";
-      els.playBtn.classList.add("playing");
-      if (idx === 0) runStep(0, true); else queueNext();
+      enter(Math.max(1, s - 1));
     }
-  });
-
-  els.stepBtn.addEventListener("click", () => {
-    if (waitingGate) return;
-    clearTimers();
-    playing = false;
-    els.playBtn.textContent = idx >= steps.length - 1 ? "Play it again" : "Resume";
-    els.playBtn.classList.remove("playing");
-    runStep(idx, false);
-  });
+  }
 
   function reset() {
-    clearTimers();
-    playing = false;
-    waitingGate = null;
-    idx = 0;
-    clockSeconds = 0;
-    els.clock.textContent = "0:00";
-    els.clock.classList.remove("done");
-    els.metricBaseline.innerHTML = "team baseline: 2.4 days";
-    els.channelFeed.innerHTML = "";
-    els.agentFeed.innerHTML = "";
-    els.orderEmpty.hidden = false;
-    els.order.hidden = true;
-    els.dupCard.hidden = true;
-    els.dupDone.hidden = true;
-    els.approveRow.hidden = true;
-    els.sentNote.hidden = true;
-    els.linkDupBtn.classList.remove("armed");
-    els.approveBtn.classList.remove("armed");
-    els.queueCard.classList.remove("linked");
-    els.queueTag.textContent = "UNASSIGNED · 2D";
-    els.queueTag.className = "tag tag-muted";
-    els.queueCount.textContent = "1 unassigned";
-    els.intakeNote.textContent = "4 channels · listening";
-    els.scenes.forEach((li) => (li.className = ""));
-    els.stepBtn.disabled = false;
-    els.playBtn.textContent = "Play the demo";
-    els.playBtn.classList.remove("playing");
-    ["f-issue", "f-site", "f-zone", "f-asset", "f-access", "f-contact"].forEach((id) => {
-      setField(id, "—", "pending", "");
-      $(id).classList.remove("flash");
-    });
-    setStatus("INCOMPLETE", "tag-muted");
+    clearTimeout(replyTimer);
+    state.step = 1;
+    state.seconds = 0;
+    state.linked = null;
+    state.awaiting = false;
+    prev = null; // Emily's card slides in again
+    render();
   }
 
+  /* ---------- wiring ---------- */
+
+  els.stepBtn.addEventListener("click", () => go(1));
+  els.backBtn.addEventListener("click", () => go(-1));
   els.restartBtn.addEventListener("click", reset);
+  els.sortBtn.addEventListener("click", () => {
+    state.sort = state.sort === "priority" ? "newest" : "priority";
+    render();
+  });
+
+  window.addEventListener("keydown", (e) => {
+    if (e.key === "ArrowRight") go(1);
+    else if (e.key === "ArrowLeft") go(-1);
+  });
+
+  setInterval(() => {
+    if (state.step < 8) {
+      state.seconds += 1;
+      els.clock.textContent = fmtClock(state.seconds);
+    }
+  }, 1000);
+
+  render();
 })();
