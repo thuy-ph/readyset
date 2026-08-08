@@ -201,6 +201,18 @@ blockquote{margin:0;font-family:var(--display);font-weight:500;letter-spacing:-.
 .rail-c .n{font-family:var(--mono);font-size:10px;letter-spacing:.14em;color:var(--signal)}
 .rail-c p{font-size:14.5px;color:var(--field);line-height:1.5}
 
+/* ── faq: spec-sheet rows, not accordion chrome ──────────── */
+.faq{border-top:1px solid var(--rule-light)}
+.qa{display:grid;grid-template-columns:minmax(280px,40%) 1fr;gap:clamp(20px,4vw,56px);
+  padding:26px 0 28px;border-bottom:1px solid var(--rule-light);align-items:start}
+@media(max-width:820px){.qa{grid-template-columns:1fr;gap:12px;padding:22px 0 24px}}
+.qa .q{display:grid;grid-template-columns:40px 1fr;gap:12px;align-items:baseline}
+.qa .n{font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;color:var(--signal)}
+.qa h3{font-size:clamp(17px,1.6vw,21px);letter-spacing:-.018em;line-height:1.28}
+.qa .a p{font-size:15.5px;line-height:1.6;color:var(--field);max-width:62ch}
+@media(max-width:820px){.qa .a{padding-left:52px}}
+@media(max-width:520px){.qa .a{padding-left:0}}
+
 /* ── founders ────────────────────────────────────────────── */
 .founders{display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,4vw,64px)}
 @media(max-width:760px){.founders{grid-template-columns:1fr;gap:44px}}
@@ -483,6 +495,56 @@ footer{background:var(--ink);color:var(--field);border-top:1px solid var(--rule-
 </section>
 
 
+<section class="pad">
+  <div class="wrap">
+    <p class="eyebrow reveal" data-fade style="margin-bottom:20px">The questions we actually get</p>
+    <h2 class="reveal" data-fade style="max-width:20ch;margin-bottom:clamp(44px,6vh,72px)">Asked in the first ten minutes, every time.</h2>
+
+    <div class="faq">
+      <div class="qa reveal" data-stagger>
+        <div class="q"><span class="n">01</span><h3>Do we have to replace our work-order system?</h3></div>
+        <div class="a"><p>No, and we&rsquo;d argue against it. Your system stays the source of record — Readyset writes into it. There is no migration, no data to move, and switching us off tomorrow leaves you exactly where you started.</p></div>
+      </div>
+
+      <div class="qa reveal" data-stagger>
+        <div class="q"><span class="n">02</span><h3>Isn&rsquo;t this a feature our CMMS will ship next year?</h3></div>
+        <div class="a"><p>Parts of it, probably. Structured intake already exists — ServiceChannel has the best in the category, and Re-Leased reads inbound email in Australia today. What none of them does is reconcile the same job arriving by email, phone, SMS and portal into one record. We checked ServiceChannel, Corrigo, Building Engines and Ecotrak: not one deduplicates at intake.</p></div>
+      </div>
+
+      <div class="qa reveal" data-stagger>
+        <div class="q"><span class="n">03</span><h3>What happens if someone reports an emergency?</h3></div>
+        <div class="a"><p>It never reaches us. Anything flagged urgent or safety-related is handed straight to the human pathway you already run, unprocessed and unqueued. We don&rsquo;t triage it, delay it, or auto-reply to it.</p></div>
+      </div>
+
+      <div class="qa reveal" data-stagger>
+        <div class="q"><span class="n">04</span><h3>How accurate is the duplicate detection?</h3></div>
+        <div class="a"><p>Not accurate enough to act on by itself — the best published systems are right about 63% of the time. So Readyset suggests, and never merges. A wrong merge puts two tenants&rsquo; details in one thread, which is a privacy incident rather than an inconvenience. A person makes that call.</p></div>
+      </div>
+
+      <div class="qa reveal" data-stagger>
+        <div class="q"><span class="n">05</span><h3>Do our tenants and contractors need to install anything?</h3></div>
+        <div class="a"><p>Nothing. Emily keeps emailing the address she already emails. Marco keeps working out of simPRO. One forwarding rule on your maintenance mailbox is the entire integration — which matters, because every portal you&rsquo;ve asked a contractor to adopt is a portal they haven&rsquo;t.</p></div>
+      </div>
+
+      <div class="qa reveal" data-stagger>
+        <div class="q"><span class="n">06</span><h3>What if it extracts something wrong?</h3></div>
+        <div class="a"><p>Every field carries its source — tenant-stated, register-matched or coordinator-entered — so a wrong value is visible rather than buried. Nothing dispatches without a human pressing assign. Readyset prepares the record; it never approves it.</p></div>
+      </div>
+
+      <div class="qa reveal" data-stagger>
+        <div class="q"><span class="n">07</span><h3>What do you do with our tenants&rsquo; data?</h3></div>
+        <div class="a"><p>We ask the smallest question that unblocks the job and keep the least we can. For the inbox audit we read it, report on it, and delete it — nothing is retained without a signed agreement.</p></div>
+      </div>
+
+      <div class="qa reveal" data-stagger>
+        <div class="q"><span class="n">08</span><h3>Where are you actually up to?</h3></div>
+        <div class="a"><p>Early, and the next section says exactly which parts are real and which are staged. The fastest way to find out whether this works on your portfolio is the inbox audit — one week of messages, no integration, and you get the answer whether or not you buy anything.</p></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
 <section class="ink on-dark pad">
   <div class="wrap">
     <p class="eyebrow reveal" data-fade style="margin-bottom:20px">Built in five hours</p>
@@ -590,7 +652,7 @@ footer{background:var(--ink);color:var(--field);border-top:1px solid var(--rule-
     gsap.fromTo(el, {opacity:0, y:22}, {opacity:1, y:0, duration:.85, ease:'power3.out',
       scrollTrigger:{trigger:el, start:'top 88%'}});
   });
-  ['.rails', '.hon', '.steps', '.founders'].forEach(sel => {
+  ['.rails', '.hon', '.steps', '.founders', '.faq'].forEach(sel => {
     const box = document.querySelector(sel); if (!box) return;
     gsap.fromTo(box.querySelectorAll('[data-stagger]'), {opacity:0, y:26},
       {opacity:1, y:0, duration:.7, ease:'power3.out', stagger:.08,
