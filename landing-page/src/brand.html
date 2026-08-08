@@ -1,0 +1,499 @@
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Readyset — Brand identity system</title>
+
+<style>
+/*__FONTS__*/
+
+:root{
+  --ink:#0B211B; --spruce:#14382E; --field:#5E7A6D; --signal:#2FD284;
+  --paper:#F5F2E9; --paper-2:#EBE7DA;
+  --on-ink:#F5F2E9; --on-ink-dim:#9CB2A6;
+  --rule-dark:rgba(245,242,233,.14);
+  --rule-light:rgba(11,33,27,.14);
+  --avoid:#B04A3A;
+  --display:'Space Grotesk',system-ui,sans-serif;
+  --body:'Inter',system-ui,sans-serif;
+  --mono:'IBM Plex Mono',ui-monospace,Menlo,monospace;
+  --gut:clamp(20px,4vw,72px);
+  --maxw:1180px;
+}
+*{box-sizing:border-box}
+body{margin:0;background:var(--paper);color:var(--ink);font-family:var(--body);
+  font-size:17px;line-height:1.6;-webkit-font-smoothing:antialiased;overflow-x:hidden}
+img{max-width:100%;display:block}
+::selection{background:var(--signal);color:var(--ink)}
+a{color:inherit}
+
+.wrap{max-width:var(--maxw);margin-inline:auto;padding-inline:var(--gut);position:relative;z-index:2;width:100%}
+
+h1,h2,h3{font-family:var(--display);font-weight:700;margin:0;letter-spacing:-.032em;line-height:1.06;text-wrap:balance}
+h1{font-size:clamp(40px,6.6vw,96px)}
+h2{font-size:clamp(28px,3.8vw,50px)}
+h3{font-size:19px;letter-spacing:-.01em;line-height:1.3}
+p{margin:0}
+.mono{font-family:var(--mono);font-size:11px;font-weight:500;letter-spacing:.15em;text-transform:uppercase;color:var(--field)}
+
+/* ── nav (static, ink-on-paper) ─────────────────────────── */
+nav{position:sticky;top:0;z-index:60;background:var(--paper);border-bottom:1px solid var(--rule-light)}
+.nav-in{display:flex;justify-content:space-between;align-items:center;height:72px;
+  max-width:var(--maxw);margin-inline:auto;padding-inline:var(--gut)}
+.lock{display:flex;align-items:center;gap:10px;color:var(--ink);text-decoration:none}
+.lock svg{width:23px;height:23px;overflow:visible}
+.lock svg path{stroke:currentColor;fill:none;stroke-width:9}
+.lock b{font-family:var(--display);font-weight:700;font-size:19px;letter-spacing:-.045em}
+.nav-right{display:flex;align-items:center;gap:22px}
+.nav-link{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--ink);text-decoration:none;border:1px solid currentColor;padding:9px 14px;
+  transition:color .2s}
+.nav-link:hover{color:var(--signal)}
+.nav-plain{font-family:var(--mono);font-size:11px;letter-spacing:.13em;text-transform:uppercase;
+  color:var(--field);text-decoration:none;transition:color .2s}
+.nav-plain:hover{color:var(--signal)}
+@media(max-width:640px){.nav-plain{display:none}}
+
+/* ── slide frame ────────────────────────────────────────── */
+.slide{border-top:1px solid var(--rule-light);padding-block:clamp(64px,9vh,120px)}
+.slide-head{display:flex;justify-content:space-between;align-items:baseline;gap:16px;margin-bottom:14px}
+.slide h2{margin-bottom:clamp(30px,5vh,54px)}
+.slide-foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  margin-top:clamp(36px,6vh,64px);padding-top:16px;border-top:1px solid var(--rule-light)}
+.slide-foot .mono{font-size:10px}
+
+/* ── cover ──────────────────────────────────────────────── */
+.cover{background:var(--ink);color:var(--on-ink);min-height:88svh;display:grid;
+  grid-template-rows:auto 1fr auto;padding-block:clamp(40px,6vh,64px);position:relative;overflow:hidden}
+.grid-bg{position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.5}
+.grid-bg::before{content:"";position:absolute;inset:0;
+  background-image:
+    repeating-linear-gradient(to right,rgba(245,242,233,.10) 0 1px,transparent 1px 160px),
+    repeating-linear-gradient(to bottom,rgba(245,242,233,.10) 0 1px,transparent 1px 160px);
+  -webkit-mask-image:radial-gradient(120% 90% at 50% 40%,#000 10%,transparent 76%);
+  mask-image:radial-gradient(120% 90% at 50% 40%,#000 10%,transparent 76%)}
+.cover .lock{color:var(--on-ink)}
+.cover .lock svg .arrow{stroke:var(--signal)}
+.cover-mid{display:flex;flex-direction:column;justify-content:center;gap:18px}
+.cover .eyebrow{font-family:var(--mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;color:var(--signal)}
+.cover-foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  padding-top:16px;border-top:1px solid var(--rule-dark)}
+.cover-foot .mono{color:var(--on-ink-dim)}
+
+/* ── shared cards ───────────────────────────────────────── */
+.panel{background:var(--spruce);color:var(--on-ink);border-left:3px solid var(--signal);
+  padding:clamp(28px,4vw,44px)}
+.panel h3{font-size:clamp(22px,2.4vw,30px);color:var(--on-ink);margin-bottom:14px}
+.panel p{color:var(--on-ink-dim);max-width:78ch}
+
+/* hero metric */
+.metric{background:var(--spruce);color:var(--on-ink);padding:clamp(32px,5vw,56px)}
+.metric .mono{color:var(--signal);letter-spacing:.2em}
+.metric .num{font-family:var(--display);font-weight:700;letter-spacing:-.04em;line-height:1;
+  font-size:clamp(56px,9vw,128px);color:var(--signal);margin-top:18px}
+.metric p{color:var(--on-ink-dim);max-width:52ch;margin-top:14px}
+
+/* brandmark */
+.logo-grid{display:grid;grid-template-columns:1fr 1fr;gap:clamp(24px,4vw,56px);align-items:center}
+@media(max-width:860px){.logo-grid{grid-template-columns:1fr}}
+.logo-stage{background:var(--spruce);aspect-ratio:8/5;display:flex;align-items:center;justify-content:center;position:relative}
+.logo-stage svg{width:38%;overflow:visible}
+.logo-stage svg path{fill:none;stroke:var(--paper);stroke-width:9;stroke-linecap:square}
+.logo-stage svg .arrow{stroke:var(--signal)}
+.logo-notes{display:flex;flex-direction:column;gap:26px}
+.logo-note{border-left:2px solid var(--rule-light);padding-left:20px}
+.logo-note h3{margin-bottom:8px}
+.logo-note p{color:var(--field);font-size:15.5px;max-width:52ch}
+
+/* colorways */
+.cw-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+@media(max-width:940px){.cw-grid{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:480px){.cw-grid{grid-template-columns:1fr}}
+.cw{aspect-ratio:3/4;padding:22px;display:flex;flex-direction:column;justify-content:space-between}
+.cw svg{width:34px;overflow:visible}
+.cw svg path{fill:none;stroke-width:9;stroke-linecap:square}
+.cw .mono{font-size:10px;letter-spacing:.14em}
+.cw small{display:block;font-family:var(--body);font-size:13px;letter-spacing:0;text-transform:none;margin-top:4px}
+.cw-ink{background:var(--ink)}      .cw-ink .mono{color:var(--on-ink-dim)}   .cw-ink small{color:var(--on-ink)}
+.cw-spruce{background:var(--spruce)}.cw-spruce .mono{color:var(--on-ink-dim)}.cw-spruce small{color:var(--on-ink)}
+.cw-signal{background:var(--signal)}.cw-signal .mono{color:rgba(11,33,27,.62)}.cw-signal small{color:var(--ink)}
+.cw-paper{background:var(--paper);border:1px solid var(--rule-light)}
+.cw-paper .mono{color:var(--field)} .cw-paper small{color:var(--ink)}
+
+/* palette */
+.pal-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:14px}
+@media(max-width:940px){.pal-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:560px){.pal-grid{grid-template-columns:1fr 1fr}}
+.pal{aspect-ratio:4/5;padding:18px;display:flex;flex-direction:column;justify-content:space-between}
+.pal .hex{font-family:var(--mono);font-size:11px;letter-spacing:.08em}
+.pal b{font-family:var(--display);font-weight:700;font-size:17px;letter-spacing:-.01em;display:block}
+.pal small{font-size:12.5px;display:block;margin-top:2px}
+.pal-ink{background:var(--ink);color:var(--on-ink)}       .pal-ink small,.pal-ink .hex{color:var(--on-ink-dim)}
+.pal-spruce{background:var(--spruce);color:var(--on-ink)} .pal-spruce small,.pal-spruce .hex{color:var(--on-ink-dim)}
+.pal-field{background:var(--field);color:var(--paper)}    .pal-field small,.pal-field .hex{color:rgba(245,242,233,.75)}
+.pal-signal{background:var(--signal);color:var(--ink)}    .pal-signal small,.pal-signal .hex{color:rgba(11,33,27,.62)}
+.pal-paper{background:var(--paper);color:var(--ink);border:1px solid var(--rule-light)}
+.pal-paper small,.pal-paper .hex{color:var(--field)}
+.ratio{background:var(--spruce);color:var(--on-ink);margin-top:16px;padding:20px 24px;
+  display:flex;gap:0;flex-wrap:wrap}
+.ratio>div{display:flex;align-items:baseline;gap:10px;padding-inline:clamp(12px,2.4vw,28px);flex:1 1 220px;
+  border-left:1px solid var(--rule-dark);padding-block:6px}
+.ratio>div:first-child{border-left:0;padding-left:0}
+.ratio b{font-family:var(--display);font-weight:700;font-size:clamp(22px,2.2vw,30px);letter-spacing:-.02em;color:var(--signal)}
+.ratio span{font-size:13.5px;color:var(--on-ink-dim)}
+
+/* typography */
+.type-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+@media(max-width:860px){.type-grid{grid-template-columns:1fr}}
+.type-card{background:var(--spruce);color:var(--on-ink);padding:26px 26px 24px;display:flex;flex-direction:column;gap:6px;min-height:300px}
+.type-card .mono{color:var(--signal);font-size:10px}
+.type-card b{font-family:var(--display);font-weight:700;font-size:22px;letter-spacing:-.02em;margin-top:8px}
+.type-card .sample{font-size:clamp(30px,3vw,40px);line-height:1.1;margin-top:6px;flex:1}
+.type-card.t-display b,.type-card.t-display .sample{font-family:var(--display)}
+.type-card.t-body b{font-family:var(--display)}
+.type-card.t-body .sample{font-family:var(--body);font-weight:400}
+.type-card.t-mono b,.type-card.t-mono .sample{font-family:var(--mono);letter-spacing:0}
+.type-card p{color:var(--on-ink-dim);font-size:13.5px;line-height:1.55;border-top:1px solid var(--rule-dark);padding-top:14px}
+
+/* imagery */
+.img-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+@media(max-width:940px){.img-grid{grid-template-columns:repeat(2,1fr)}}
+.shot{position:relative;background:var(--spruce);overflow:hidden;aspect-ratio:4/5}
+.shot img{position:absolute;inset:0;width:100%;height:100%;object-fit:cover;
+  filter:grayscale(1) contrast(1.06) brightness(1.02);mix-blend-mode:luminosity;opacity:.9}
+.shot::after{content:"";position:absolute;inset:0;
+  background:linear-gradient(to top,rgba(11,33,27,.8),rgba(11,33,27,.06) 55%)}
+.shot .tag{position:absolute;left:0;bottom:0;z-index:2;padding:14px 16px;
+  font-family:var(--mono);font-size:10px;letter-spacing:.13em;text-transform:uppercase;color:var(--paper)}
+.img-words{background:var(--spruce);margin-top:16px;padding:16px 22px;display:flex;gap:8px 26px;flex-wrap:wrap}
+.img-words span{font-family:var(--mono);font-size:10.5px;letter-spacing:.14em;text-transform:uppercase;color:var(--on-ink)}
+.img-words span::before{content:"·";color:var(--signal);margin-right:9px}
+
+/* touchpoints */
+.touch-grid{display:grid;grid-template-columns:1.15fr 1fr;gap:clamp(18px,3vw,32px);align-items:start}
+@media(max-width:860px){.touch-grid{grid-template-columns:1fr}}
+.wo{background:var(--spruce);color:var(--on-ink);border:1px solid var(--rule-dark);box-shadow:14px 14px 0 rgba(11,33,27,.12)}
+.wo-h{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+  padding:18px 24px;border-bottom:1px solid var(--rule-dark)}
+.wo-h .id{font-family:var(--mono);font-size:13px;letter-spacing:.12em}
+.wo-tag{font-family:var(--mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;
+  background:var(--signal);color:var(--ink);padding:5px 10px}
+.wo-tag::before{content:"●";font-size:8px;margin-right:7px}
+.wo-rows{padding:8px 24px 18px}
+.wo-row{display:grid;grid-template-columns:96px 1fr;gap:16px;align-items:baseline;
+  padding-block:13px;border-bottom:1px solid var(--rule-dark)}
+.wo-row:last-child{border-bottom:0}
+.wo-row .k{font-family:var(--mono);font-size:10px;letter-spacing:.15em;text-transform:uppercase;color:var(--on-ink-dim)}
+.wo-row .v{font-size:15.5px}
+.touch-col{display:flex;flex-direction:column;gap:16px}
+.mini{background:var(--ink);color:var(--on-ink);padding:22px 24px;border:1px solid var(--rule-dark)}
+.mini .mono{font-size:10px;color:var(--on-ink-dim)}
+.mini b{display:block;font-family:var(--display);font-weight:700;font-size:17.5px;letter-spacing:-.015em;margin-top:8px}
+.mini small{display:block;font-size:13px;color:var(--on-ink-dim);margin-top:5px}
+.mini.doc .mono{color:var(--signal)}
+
+/* voice */
+.voice-grid{display:grid;grid-template-columns:1fr 1.1fr;gap:clamp(18px,3vw,32px);align-items:start}
+@media(max-width:860px){.voice-grid{grid-template-columns:1fr}}
+.voice-col{display:flex;flex-direction:column;gap:14px}
+.vp{background:var(--spruce);color:var(--on-ink);border-left:3px solid var(--signal);padding:18px 22px}
+.vp b{font-family:var(--display);font-weight:700;font-size:19px;letter-spacing:-.015em;display:block}
+.vp p{color:var(--on-ink-dim);font-size:13.5px;margin-top:4px}
+.ex{padding:20px 24px}
+.ex .mono{font-size:10px}
+.ex q{quotes:'"' '"';display:block;font-family:var(--display);font-weight:500;font-size:clamp(18px,1.9vw,23px);
+  letter-spacing:-.015em;line-height:1.35;margin-top:8px}
+.ex-avoid{background:rgba(176,74,58,.08);border:1px solid rgba(176,74,58,.35)}
+.ex-avoid .mono{color:var(--avoid)}
+.ex-avoid q{color:var(--avoid)}
+.ex-voice{background:var(--spruce);color:var(--on-ink);border-left:3px solid var(--signal)}
+.ex-voice .mono{color:var(--signal)}
+
+/* sources + footer */
+.src-list{display:flex;flex-direction:column}
+.src{display:flex;justify-content:space-between;gap:18px;flex-wrap:wrap;align-items:baseline;
+  padding-block:14px;border-bottom:1px solid var(--rule-light)}
+.src span{font-size:14px;color:var(--ink)}
+.src a{font-family:var(--mono);font-size:11px;letter-spacing:.08em;color:var(--field);text-decoration:none}
+.src a:hover{color:var(--signal)}
+.deck-link{display:inline-block;margin-top:26px;font-family:var(--mono);font-size:11px;letter-spacing:.13em;
+  text-transform:uppercase;color:var(--ink);text-decoration:none;border:1px solid currentColor;padding:11px 16px;
+  transition:color .2s}
+.deck-link:hover{color:var(--signal)}
+
+footer{background:var(--ink);color:var(--field);border-top:1px solid var(--rule-dark);padding-block:24px;margin-top:clamp(64px,9vh,120px)}
+.foot{display:flex;justify-content:space-between;gap:16px;flex-wrap:wrap;
+  font-family:var(--mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase}
+.foot a{color:inherit;text-decoration:none}
+.foot a:hover{color:var(--signal)}
+</style>
+
+<nav>
+  <div class="nav-in">
+    <a class="lock" href="../">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <path d="M51 53 L77 88"/>
+        <path d="M22 88 V12 H58 a20 20 0 0 1 0 40 H22"/>
+      </svg>
+      <b>readyset</b>
+    </a>
+    <div class="nav-right">
+      <span class="nav-plain" style="pointer-events:none">Brand identity system</span>
+      <a class="nav-link" href="../demo/">Try the demo →</a>
+    </div>
+  </div>
+</nav>
+
+<!-- ══ COVER ════════════════════════════════════════════ -->
+<header class="cover">
+  <div class="grid-bg"></div>
+  <div class="wrap">
+    <span class="lock">
+      <svg viewBox="0 0 100 100" aria-hidden="true">
+        <path class="arrow" d="M51 53 L77 88"/>
+        <path d="M22 88 V12 H58 a20 20 0 0 1 0 40 H22"/>
+      </svg>
+      <b>readyset</b>
+    </span>
+  </div>
+  <div class="wrap cover-mid">
+    <p class="eyebrow">Brand identity system</p>
+    <h1>From reported to&nbsp;ready.</h1>
+  </div>
+  <div class="wrap cover-foot">
+    <span class="mono">Readyset B2B facilities software</span>
+    <span class="mono">Version 1.0 — 2026</span>
+  </div>
+</header>
+
+<!-- ══ 01 · BRAND STRATEGY ══════════════════════════════ -->
+<section class="slide">
+  <div class="wrap">
+    <div class="slide-head"><span class="mono">01 / Brand strategy</span><span class="mono">02</span></div>
+    <h2>Brand Idea: Operational Calm</h2>
+    <div class="panel">
+      <h3>Operational calm.</h3>
+      <p>A well-run commercial building at 7:00 AM: every system checked, every corridor clear, nothing hurried. Readyset exists to bring that exact state of readiness to portfolio facilities teams. By stripping away administrative noise between request and dispatch, we convert multi-channel chaos into quiet operational momentum. Readiness is not speed alone&mdash;it is clarity, confidence, and complete control before the day begins.</p>
+    </div>
+    <div class="slide-foot"><span class="mono">Readyset brand guidelines</span><span class="mono">Organising thought</span></div>
+  </div>
+</section>
+
+<!-- ══ 02 · HERO METRIC ═════════════════════════════════ -->
+<section class="slide">
+  <div class="wrap">
+    <div class="slide-head"><span class="mono">02 / Hero metric</span><span class="mono">03</span></div>
+    <h2>Quantifying Operational Calm</h2>
+    <div class="metric">
+      <span class="mono">Hero metric — Time-to-Ready</span>
+      <div class="num">2.4 days → 4 min</div>
+      <p>The average administrative lag spent chasing room numbers, access windows, and site contacts before a contractor can be safely dispatched.</p>
+    </div>
+    <div class="slide-foot"><span class="mono">Readyset brand guidelines</span><span class="mono">Performance indicator</span></div>
+  </div>
+</section>
+
+<!-- ══ 03 · BRANDMARK ═══════════════════════════════════ -->
+<section class="slide">
+  <div class="wrap">
+    <div class="slide-head"><span class="mono">03 / Brandmark design</span><span class="mono">04</span></div>
+    <h2>Logo &amp; Visual Symbol</h2>
+    <div class="logo-grid">
+      <div class="logo-stage">
+        <svg viewBox="0 0 100 100" aria-label="Readyset brandmark">
+          <path class="arrow" d="M51 53 L77 88"/>
+          <path d="M22 88 V12 H58 a20 20 0 0 1 0 40 H22"/>
+        </svg>
+      </div>
+      <div class="logo-notes">
+        <div class="logo-note">
+          <h3>Monoline Geometry</h3>
+          <p>Constructed on a strict architectural grid with stroke weight precisely matched to lowercase Space Grotesk letterforms.</p>
+        </div>
+        <div class="logo-note">
+          <h3>Dual Reading</h3>
+          <p>Reads simultaneously as a capital letter &lsquo;R&rsquo; and a forward dispatch arrow&mdash;symbolising unstructured request in, dispatch-ready work order out.</p>
+        </div>
+        <div class="logo-note">
+          <h3>Clear-Space Standard</h3>
+          <p>Minimum clear space equals &lsquo;X&rsquo; (the width of the vertical stem) on all four sides of the brandmark.</p>
+        </div>
+      </div>
+    </div>
+    <div class="slide-foot"><span class="mono">Readyset brand guidelines</span><span class="mono">Logo architecture</span></div>
+  </div>
+</section>
+
+<!-- ══ 04 · COLORWAYS ═══════════════════════════════════ -->
+<section class="slide">
+  <div class="wrap">
+    <div class="slide-head"><span class="mono">04 / Logo applications</span><span class="mono">05</span></div>
+    <h2>Brandmark Colorways</h2>
+    <div class="cw-grid">
+      <div class="cw cw-ink">
+        <svg viewBox="0 0 100 100" aria-hidden="true" style="stroke:var(--paper)"><path d="M51 53 L77 88" style="stroke:var(--paper)"/><path d="M22 88 V12 H58 a20 20 0 0 1 0 40 H22" style="stroke:var(--paper)"/></svg>
+        <span class="mono">Ink Green BG<small>Paper Mark (#F5F2E9)</small></span>
+      </div>
+      <div class="cw cw-spruce">
+        <svg viewBox="0 0 100 100" aria-hidden="true"><path d="M51 53 L77 88" style="stroke:var(--paper)"/><path d="M22 88 V12 H58 a20 20 0 0 1 0 40 H22" style="stroke:var(--paper)"/></svg>
+        <span class="mono">Spruce BG<small>Paper Mark (#F5F2E9)</small></span>
+      </div>
+      <div class="cw cw-signal">
+        <svg viewBox="0 0 100 100" aria-hidden="true"><path d="M51 53 L77 88" style="stroke:var(--ink)"/><path d="M22 88 V12 H58 a20 20 0 0 1 0 40 H22" style="stroke:var(--ink)"/></svg>
+        <span class="mono">Signal Accent BG<small>Ink Mark (#0B211B)</small></span>
+      </div>
+      <div class="cw cw-paper">
+        <svg viewBox="0 0 100 100" aria-hidden="true"><path d="M51 53 L77 88" style="stroke:var(--spruce)"/><path d="M22 88 V12 H58 a20 20 0 0 1 0 40 H22" style="stroke:var(--spruce)"/></svg>
+        <span class="mono">Paper Canvas BG<small>Spruce Mark (#14382E)</small></span>
+      </div>
+    </div>
+    <div class="slide-foot"><span class="mono">Readyset brand guidelines</span><span class="mono">Colorway permissible usage</span></div>
+  </div>
+</section>
+
+<!-- ══ 05 · COLOR SYSTEM ════════════════════════════════ -->
+<section class="slide">
+  <div class="wrap">
+    <div class="slide-head"><span class="mono">05 / Color system</span><span class="mono">06</span></div>
+    <h2>Monochromatic Green Palette</h2>
+    <div class="pal-grid">
+      <div class="pal pal-ink"><span class="hex">#0B211B</span><span><b>Ink Green</b><small>Primary Text / Dark BG</small></span></div>
+      <div class="pal pal-spruce"><span class="hex">#14382E</span><span><b>Spruce</b><small>Panels &amp; Structural UI</small></span></div>
+      <div class="pal pal-field"><span class="hex">#5E7A6D</span><span><b>Field Green</b><small>Secondary Surfaces</small></span></div>
+      <div class="pal pal-signal"><span class="hex">#2FD284</span><span><b>Signal Green</b><small>Ready Status &amp; CTAs</small></span></div>
+      <div class="pal pal-paper"><span class="hex">#F5F2E9</span><span><b>Paper</b><small>Canvas / Warm Off-White</small></span></div>
+    </div>
+    <div class="ratio">
+      <div><b>60%</b><span>Paper Backgrounds &amp; Canvas</span></div>
+      <div><b>30%</b><span>Deep Greens (Ink / Spruce)</span></div>
+      <div><b>&lt;10%</b><span>Signal Green Accent (Status Only)</span></div>
+    </div>
+    <div class="slide-foot"><span class="mono">Readyset brand guidelines</span><span class="mono">60 / 30 / 10 harmony rule</span></div>
+  </div>
+</section>
+
+<!-- ══ 06 · TYPOGRAPHY ══════════════════════════════════ -->
+<section class="slide">
+  <div class="wrap">
+    <div class="slide-head"><span class="mono">06 / Typography</span><span class="mono">07</span></div>
+    <h2>Type Hierarchy &amp; Roles</h2>
+    <div class="type-grid">
+      <div class="type-card t-display">
+        <span class="mono">Display &amp; headlines</span>
+        <b>Space Grotesk</b>
+        <div class="sample">Aa Bb 0123</div>
+        <p>Headlines, wordmarks, big numerals. Medium / SemiBold weights for crisp geometric authority.</p>
+      </div>
+      <div class="type-card t-body">
+        <span class="mono">Body &amp; interface</span>
+        <b>Inter</b>
+        <div class="sample">Aa Bb 0123</div>
+        <p>Body narrative, UI text, and core reading material. Highly legible at dense sizes with unhurried cadence.</p>
+      </div>
+      <div class="type-card t-mono">
+        <span class="mono">System voice &amp; data</span>
+        <b>IBM Plex Mono</b>
+        <div class="sample">WO-4831</div>
+        <p>Work-order IDs, timestamps, field labels, status tags. Sparing, precise, technical context.</p>
+      </div>
+    </div>
+    <div class="slide-foot"><span class="mono">Readyset brand guidelines</span><span class="mono">Google Fonts specification</span></div>
+  </div>
+</section>
+
+<!-- ══ 07 · ART DIRECTION ═══════════════════════════════ -->
+<section class="slide">
+  <div class="wrap">
+    <div class="slide-head"><span class="mono">07 / Art direction</span><span class="mono">08</span></div>
+    <h2>Documentary-Calm Imagery</h2>
+    <div class="img-grid">
+      <div class="shot"><img src="__IMG_01__" alt="Commercial lobby before staff arrive"><span class="tag">Commercial lobby / 06:45 AM</span></div>
+      <div class="shot"><img src="__IMG_02__" alt="Back-of-house service corridor"><span class="tag">Service corridor B2</span></div>
+      <div class="shot"><img src="__IMG_03__" alt="Rooftop mechanical plant"><span class="tag">Rooftop plant room</span></div>
+      <div class="shot"><img src="__IMG_04__" alt="Loading dock at dawn"><span class="tag">Loading dock / Gate 01</span></div>
+    </div>
+    <div class="img-words">
+      <span>Ordered</span><span>Quiet</span><span>Structural</span>
+      <span>Early morning light</span><span>Muted green grade</span><span>Honest not glossy</span>
+    </div>
+    <div class="slide-foot"><span class="mono">Readyset brand guidelines</span><span class="mono">Photography directive</span></div>
+  </div>
+</section>
+
+<!-- ══ 08 · TOUCHPOINTS ═════════════════════════════════ -->
+<section class="slide">
+  <div class="wrap">
+    <div class="slide-head"><span class="mono">08 / Brand applications</span><span class="mono">09</span></div>
+    <h2>System Touchpoints</h2>
+    <div class="touch-grid">
+      <div class="wo">
+        <div class="wo-h"><span class="id">WORK ORDER #WO-4831</span><span class="wo-tag">Dispatch ready</span></div>
+        <div class="wo-rows">
+          <div class="wo-row"><span class="k">Site</span><span class="v">400 George Street, Sydney</span></div>
+          <div class="wo-row"><span class="k">Zone</span><span class="v">Level 12 / Plant Room B</span></div>
+          <div class="wo-row"><span class="k">Access</span><span class="v">07:00 – 09:00 AM (Confirmed)</span></div>
+          <div class="wo-row"><span class="k">Contact</span><span class="v">M. Taylor (Facilities Ops)</span></div>
+        </div>
+      </div>
+      <div class="touch-col">
+        <div class="mini">
+          <span class="mono">Email dispatch header</span>
+          <b>[READYSET] Work Order #WO-4831 is ready for approval</b>
+          <small>Automated request resolution · 2 mins ago</small>
+        </div>
+        <div class="mini doc">
+          <span class="mono">Document cover</span>
+          <b>Portfolio Operations Summary</b>
+          <small>Q3 Facility Readiness Index</small>
+        </div>
+      </div>
+    </div>
+    <div class="slide-foot"><span class="mono">Readyset brand guidelines</span><span class="mono">Interface &amp; collateral</span></div>
+  </div>
+</section>
+
+<!-- ══ 09 · VOICE & TONE ════════════════════════════════ -->
+<section class="slide">
+  <div class="wrap">
+    <div class="slide-head"><span class="mono">09 / Voice &amp; tone</span><span class="mono">10</span></div>
+    <h2>Brand Voice Directive</h2>
+    <div class="voice-grid">
+      <div class="voice-col">
+        <div class="vp"><b>Precise</b><p>State facts, details, and exact parameters. Avoid vague adjectives.</p></div>
+        <div class="vp"><b>Unhurried</b><p>Calm, structured phrasing that reflects control and readiness.</p></div>
+        <div class="vp"><b>Credible</b><p>Speak directly to experienced property operations leaders without hype.</p></div>
+      </div>
+      <div class="voice-col">
+        <div class="ex ex-avoid">
+          <span class="mono">Avoid / Hyped &amp; playful</span>
+          <q>Supercharge your maintenance ops with AI!</q>
+        </div>
+        <div class="ex ex-voice">
+          <span class="mono">Readyset voice / Precise</span>
+          <q>The work order is ready. You just approve it.</q>
+        </div>
+      </div>
+    </div>
+    <div class="slide-foot"><span class="mono">Readyset brand guidelines</span><span class="mono">Editorial standards</span></div>
+  </div>
+</section>
+
+<!-- ══ SOURCES ══════════════════════════════════════════ -->
+<section class="slide">
+  <div class="wrap">
+    <div class="slide-head"><span class="mono">Appendix</span><span class="mono">11</span></div>
+    <h2>Image Sources</h2>
+    <div class="src-list">
+      <div class="src"><span>Commercial lobby — Hyllie Terrace, Malmö</span><a href="https://group.skanska.com" rel="noopener">group.skanska.com</a></div>
+      <div class="src"><span>Minimal geometric architecture</span><a href="https://stockcake.com" rel="noopener">stockcake.com</a></div>
+      <div class="src"><span>Rooftop plant</span><a href="https://remingtonsolar.com" rel="noopener">remingtonsolar.com</a></div>
+      <div class="src"><span>Isometric loading dock</span><a href="https://stockcake.com" rel="noopener">stockcake.com</a></div>
+    </div>
+    <a class="deck-link" href="https://gemini.google.com/share/25f069bd545f?skid=88527797-f4e1-4efb-99a8-f674fce78b9d" rel="noopener">View the original deck on Gemini →</a>
+  </div>
+</section>
+
+<footer>
+  <div class="wrap foot">
+    <span><a href="../">Readyset</a> · From reported to ready</span>
+    <span>Brand identity system · v1.0 · 2026</span>
+  </div>
+</footer>

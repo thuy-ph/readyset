@@ -29,6 +29,8 @@ No dependencies, no install step. Node 18+.
 |---|---|
 | `src/index.html` | The page you edit. Contains `/*__FONTS__*/`, `/*__GSAP__*/` and `__IMG_0n__` tokens. |
 | `src/build.mjs` | Inlines everything and writes `dist/index.html`. |
+| `src/brand.html` | The brand-system page (`/brand/`). Same tokens, no GSAP. |
+| `src/build-brand.mjs` | Builds `dist/brand.html` → copy to `../brand/index.html`. |
 | `src/inline-fonts.mjs` | Regenerates `assets/fonts-inline.css` — only needed if the typefaces change. |
 | `src/fonts.css` | The Google Fonts CSS the font script parses. |
 | `vendor/` | GSAP 3.12.5 core + ScrollTrigger, vendored because CDNs are blocked. |
@@ -58,6 +60,20 @@ curl -A "Mozilla/5.0" \
   -o fonts.css
 node inline-fonts.mjs     # writes ../assets/fonts-inline.css
 ```
+
+## The brand page
+
+`/brand/` recreates the *Brand Identity System* deck (originally built in Gemini
+Canvas — linked at the bottom of the page) as a native, self-contained page:
+
+```sh
+cd landing-page
+node src/build-brand.mjs      # → dist/brand.html
+cp dist/brand.html ../brand/index.html
+```
+
+It reuses `assets/img/01–04` and the inlined fonts; it's linked from the
+landing nav ("Brand system") and footer.
 
 ## The reel page
 
