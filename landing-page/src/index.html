@@ -208,7 +208,8 @@ blockquote{margin:0;font-family:var(--display);font-weight:500;letter-spacing:-.
 .fo-meta{margin-top:20px;display:flex;flex-direction:column;gap:5px}
 .fo-meta .nm{font-family:var(--display);font-weight:700;font-size:clamp(22px,2.3vw,30px);letter-spacing:-.03em}
 .fo-meta .rl{font-family:var(--mono);font-size:10.5px;letter-spacing:.13em;text-transform:uppercase;color:var(--field)}
-.fo-meta p{font-size:15px;color:var(--field);line-height:1.5;margin-top:8px;max-width:40ch}
+.fo-meta p{font-size:15px;color:var(--on-ink-dim);line-height:1.55;margin-top:10px;max-width:46ch}
+.fo-meta p b{color:var(--paper);font-weight:500}
 
 /* ── honesty ─────────────────────────────────────────────── */
 .hon{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--rule-dark);border:1px solid var(--rule-dark)}
@@ -440,33 +441,38 @@ footer{background:var(--ink);color:var(--field);border-top:1px solid var(--rule-
 <section class="spruce on-dark pad">
   <div class="wrap">
     <p class="eyebrow reveal" data-fade style="margin-bottom:20px">Who&rsquo;s building it</p>
-    <h2 class="reveal" data-fade style="max-width:22ch;margin-bottom:clamp(44px,6vh,72px)">We kept meeting Leo. He was always mid-phone-call.</h2>
+    <h2 class="reveal" data-fade style="max-width:24ch;margin-bottom:22px">Two engineers who have already shipped both halves of this.</h2>
+    <p class="lede reveal" data-fade style="margin-bottom:clamp(44px,6vh,72px)">Property listings at national scale. Dispatch coordination as a product. Payments infrastructure, where being approximately right is the same as being wrong. Readyset sits exactly on that intersection.</p>
 
     <div class="founders">
       <div class="reveal" data-stagger>
         <div class="fo-photo">
-          <!-- PHOTO SLOT A — drop a portrait at landing-page/assets/img/06-founder-a.jpg and rebuild -->
-          <div class="fo-slot"><i></i>Portrait A<br>4:5 · desaturated</div>
+          <!-- PHOTO SLOT A — drop a portrait at landing-page/assets/img/06-founder-a.jpg,
+               swap this div for <img src="__IMG_06__" alt="Nik"> and rebuild -->
+          <div class="fo-slot"><i></i>Nik · portrait<br>4:5 · desaturated</div>
         </div>
         <div class="fo-meta">
-          <span class="nm">[Your name]</span>
-          <span class="rl">Co-founder</span>
-          <p>[One line on what you owned before this — the thing that makes the intake problem obvious to you.]</p>
+          <span class="nm">Nik</span>
+          <span class="rl">Co-founder · engineering</span>
+          <p>Fifteen years in production systems. High-traffic marketplace engineering at <b>REA Group</b> — realestate.com.au — and payments infrastructure at <b>Block&rsquo;s Cash App</b>. Head of Engineering at <b>Detrack</b>, where the entire product was dispatch coordination, and founder of <b>Not Quite Tech</b>, building agentic AI workflows.</p>
         </div>
       </div>
 
       <div class="reveal" data-stagger>
         <div class="fo-photo">
-          <!-- PHOTO SLOT B — drop a portrait at landing-page/assets/img/07-founder-b.jpg and rebuild -->
-          <div class="fo-slot"><i></i>Portrait B<br>4:5 · desaturated</div>
+          <!-- PHOTO SLOT B — drop a portrait at landing-page/assets/img/07-founder-b.jpg,
+               swap this div for <img src="__IMG_07__" alt="Thuy"> and rebuild -->
+          <div class="fo-slot"><i></i>Thuy · portrait<br>4:5 · desaturated</div>
         </div>
         <div class="fo-meta">
           <span class="nm">Thuy</span>
-          <span class="rl">Co-founder</span>
-          <p>[One line — same.]</p>
+          <span class="rl">Co-founder · product</span>
+          <p>Engineer, product builder and writer. Payments infrastructure at <b>Block&rsquo;s Cash App</b> and financial software at <b>Xero</b> — the books most Australian trades already run on. First engineer on <b>MAVERIC</b>, Monash University&rsquo;s AI research supercomputer, and builder of <b>Artificial Thuy</b>, a live conversational AI twin.</p>
         </div>
       </div>
     </div>
+
+    <p class="lede reveal" data-fade style="margin-top:clamp(40px,5vh,64px);max-width:60ch">Neither of us is a facilities manager. We spent the day with the people who are, and the thing they kept describing wasn&rsquo;t a software gap. It was four people holding four pieces of the same request.</p>
   </div>
 </section>
 

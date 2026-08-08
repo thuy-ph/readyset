@@ -21,6 +21,9 @@ for (const f of imgs) {
   html = html.replace(token, () => 'data:image/jpeg;base64,' + readFileSync(at('assets','img',f)).toString('base64'));
   used++;
 }
+// dist is generated — drop authoring comments (they also carry token names,
+// which would otherwise trip the unfilled-token guard below)
+html = html.replace(/<!--[\s\S]*?-->/g, '');
 const left = html.match(/__IMG_\d+__/g);
 if (left) throw new Error('token with no image file: ' + [...new Set(left)].join(', '));
 writeFileSync(at('dist','index.html'), html);
