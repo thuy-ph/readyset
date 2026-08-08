@@ -59,6 +59,12 @@ curl -A "Mozilla/5.0" \
 node inline-fonts.mjs     # writes ../assets/fonts-inline.css
 ```
 
+## The reel page
+
+`src/reel.html` builds to `../reel/index.html` in the same run. It's a
+standalone placeholder that shows the reel once `reel/reel.mp4` exists —
+see `reel/README.md`.
+
 ## Founder portraits
 
 Two slots are waiting in the founders section. Drop portraits at
